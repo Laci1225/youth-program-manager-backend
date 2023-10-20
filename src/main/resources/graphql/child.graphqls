@@ -1,0 +1,46 @@
+type Child {
+    id: ID!
+    familyName: String!
+    givenName: String!
+    birthDate: String!
+    birthPlace:String!
+    address: String!
+    #diseases: Diseases!
+    #medicines: Medicines
+}
+input ChildInput {
+    id: ID!
+    familyName: String!
+    givenName: String!
+    birthDate: String!
+    birthPlace:String!
+    address: String!
+    #diseases: DiseasesInput!
+    #medicines: MedicinesInput
+}
+
+#type Diseases{
+#    name: String!
+#    date: String
+#}
+#type Medicines{
+#    name: String!
+#    dose: String!
+#    takenSince: LocalDateTime
+#}
+#input DiseasesInput{
+#    name: String!
+#    date: String
+#}
+#input MedicinesInput{
+#    name: String!
+#    dose: String!
+#    takenSince: LocalDateTime
+#}
+
+type Query {
+    children: [Child!]!
+}
+type Mutation{
+    addChild(child: ChildInput!): Child!
+}

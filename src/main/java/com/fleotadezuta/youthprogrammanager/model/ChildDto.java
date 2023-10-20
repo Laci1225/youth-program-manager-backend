@@ -1,4 +1,4 @@
-package com.fleotadezuta.youthprogrammanager.persistance.document;
+package com.fleotadezuta.youthprogrammanager.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,14 +7,12 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-@Document(collection = "children")
-public class ChildDocument {
+public class ChildDto {
     @Id
     private String id;
     private String familyName;
@@ -24,9 +22,8 @@ public class ChildDocument {
     private String address;
     //private Diseases diseases;
     //private Medicines medicines;
-    ///@CreatedDate
-    ///private LocalDateTime createdDate;
-    ///@LastModifiedDate
-    ///private LocalDateTime modifiedDate;
+    //@CreatedDate
+    //private LocalDateTime createdDate;
+    //@LastModifiedDate
+    //private LocalDateTime modifiedDate;
 }
-

@@ -1,23 +1,30 @@
 package com.fleotadezuta.youthprogrammanager.service;
 
+import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
+import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.persistance.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistance.repository.ChildRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
 @Service
+@AllArgsConstructor
 public class ChildService {
 
-    private ChildRepository childRepository;
+    private final ChildRepository childRepository;
+    private final ChildMapper childMapper;
 
-
-    public Flux<ChildDocument> children(){
-        return childRepository.findAll();
+    public Flux<ChildDto> children() {
+        return childRepository.findAll()
+                .map(childMapper::fromChildDocumentToChildDto);
     }
-    public Mono<ChildDocument> addChild(ChildDocument childDocument) {
-        return childRepository.save(childDocument);
+
+    public Mono<ChildDto> addChild(ChildDocument childDocument) {
+        return childRepository.save(childDocument)
+                .map(childMapper::fromChildDocumentToChildDto);
 
     }
 }

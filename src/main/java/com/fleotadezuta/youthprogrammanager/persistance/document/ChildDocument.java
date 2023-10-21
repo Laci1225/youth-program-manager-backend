@@ -1,5 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.persistance.document;
 
+import com.fleotadezuta.youthprogrammanager.constants.Diseases;
+import com.fleotadezuta.youthprogrammanager.constants.Medicines;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,11 +24,11 @@ public class ChildDocument {
     private String birthDate;
     private String birthPlace;
     private String address;
-    //private Diseases diseases;
-    //private Medicines medicines;
-    ///@CreatedDate
-    ///private LocalDateTime createdDate;
-    ///@LastModifiedDate
-    ///private LocalDateTime modifiedDate;
+    private Diseases diseases;
+    private Medicines medicines;
+    @CreatedDate
+    private LocalDateTime createdDate;
+    @LastModifiedDate
+    private LocalDateTime modifiedDate;
 }
 

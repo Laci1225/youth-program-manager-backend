@@ -4,6 +4,7 @@ import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.persistance.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import lombok.AllArgsConstructor;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -24,7 +25,7 @@ public class ChildController {
     }
 
     @MutationMapping("addChild")
-    public Mono<ChildDto> addChild(@RequestBody ChildDocument childDocument){
-        return childService.addChild(childDocument);
+    public Mono<ChildDto> addChild(@RequestBody @Argument ChildDto child){
+        return childService.addChild(child);
     }
 }

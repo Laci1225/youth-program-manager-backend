@@ -22,8 +22,9 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Mono<ChildDto> addChild(ChildDocument childDocument) {
-        return childRepository.save(childDocument)
+    public Mono<ChildDto> addChild(ChildDto childDto) {
+        var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
+        return childRepository.save(childDoc)
                 .map(childMapper::fromChildDocumentToChildDto);
 
     }

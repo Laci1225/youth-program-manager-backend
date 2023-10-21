@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
+@Builder
+@NoArgsConstructor
 @Document(collection = "children")
 public class ChildDocument {
     @Id
@@ -30,5 +32,6 @@ public class ChildDocument {
     private LocalDateTime createdDate;
     @LastModifiedDate
     private LocalDateTime modifiedDate;
+    //TODO
 }
 

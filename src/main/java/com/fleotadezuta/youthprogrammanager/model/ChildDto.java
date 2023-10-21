@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
+@Builder
+@NoArgsConstructor
 public class ChildDto {
     @Id
     private String id;

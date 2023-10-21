@@ -1,7 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.controller;
 
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.persistance.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -11,6 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import jakarta.validation.Valid;
+
+
 
 
 @Controller
@@ -25,7 +27,7 @@ public class ChildController {
     }
 
     @MutationMapping("addChild")
-    public Mono<ChildDto> addChild(@RequestBody @Argument ChildDto child){
+    public Mono<ChildDto> addChild(@Valid @RequestBody @Argument ChildDto child){
         return childService.addChild(child);
     }
 }

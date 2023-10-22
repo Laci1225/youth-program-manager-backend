@@ -1,7 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.model;
 
-import com.fleotadezuta.youthprogrammanager.constants.Diseases;
-import com.fleotadezuta.youthprogrammanager.constants.Medicines;
+import com.fleotadezuta.youthprogrammanager.constants.Disease;
+import com.fleotadezuta.youthprogrammanager.constants.Medicine;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -24,8 +25,8 @@ public class ChildDto {
     private String birthDate;
     private String birthPlace;
     private String address;
-    private Diseases diseases;
-    private Medicines medicines;
+    private List<Disease> diseases;
+    private List<Medicine> medicines;
     @CreatedDate
     private LocalDateTime createdDate;
     @LastModifiedDate

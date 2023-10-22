@@ -1,7 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.persistance.document;
 
-import com.fleotadezuta.youthprogrammanager.constants.Diseases;
-import com.fleotadezuta.youthprogrammanager.constants.Medicines;
+import com.fleotadezuta.youthprogrammanager.constants.Disease;
+import com.fleotadezuta.youthprogrammanager.constants.Medicine;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -26,8 +27,8 @@ public class ChildDocument {
     private String birthDate;
     private String birthPlace;
     private String address;
-    private Diseases diseases;
-    private Medicines medicines;
+    private List<Disease> diseases;
+    private List<Medicine> medicines;
     @CreatedDate
     private LocalDateTime createdDate;
     @LastModifiedDate

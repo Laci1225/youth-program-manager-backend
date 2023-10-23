@@ -1,10 +1,10 @@
 package com.fleotadezuta.youthprogrammanager;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.mongodb.config.EnableReactiveMongoAuditing;
 
 @Configuration
-@EnableMongoAuditing
+@EnableReactiveMongoAuditing
 public class MongoConfig {
 
 }

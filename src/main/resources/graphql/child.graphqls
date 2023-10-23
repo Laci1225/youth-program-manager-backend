@@ -24,16 +24,16 @@ input ChildInput {
 
 type Diseases{
     name: String!
-    date: String
+    diagnosedAt: LocalDateTime
 }
 type Medicines{
     name: String!
     dose: String!
-    takenSince: String
+    takenSince: LocalDateTime
 }
 input DiseasesInput{
     name: String!
-    date: String
+    diagnosedAt: LocalDateTime!
 }
 input MedicinesInput{
     name: String!

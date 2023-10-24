@@ -7,8 +7,10 @@ type Child {
     birthDate: String!
     birthPlace:String!
     address: String!
-    diseases: [Diseases!]!
-    medicines: [Medicines!]
+    diagnosedDiseases: [Diseases!]!
+    regularMedicines: [Medicines!]
+    hasDiagnosedDiseases: Boolean!
+    hasRegularMedicines: Boolean!
     createdDate: LocalDateTime
     modifiedDate: LocalDateTime
 }
@@ -18,8 +20,8 @@ input ChildInput {
     birthDate: String!
     birthPlace:String!
     address: String!
-    diseases: [DiseasesInput!]!
-    medicines: [MedicinesInput!]
+    diagnosedDiseases: [DiseasesInput!]!
+    regularMedicines: [MedicinesInput!]
 }
 
 type Diseases{

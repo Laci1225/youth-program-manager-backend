@@ -25,8 +25,10 @@ public class ChildDto {
     private String birthDate;
     private String birthPlace;
     private String address;
-    private List<Disease> diseases;
-    private List<Medicine> medicines;
+    private List<Disease> diagnosedDiseases;
+    private List<Medicine> regularMedicines;
+    private Boolean hasDiagnosedDiseases;
+    private Boolean hasRegularMedicines;
     @CreatedDate
     private LocalDateTime createdDate;
     @LastModifiedDate

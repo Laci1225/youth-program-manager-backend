@@ -27,12 +27,12 @@ public class ChildDocument {
     private String birthDate;
     private String birthPlace;
     private String address;
-    private List<Disease> diseases;
-    private List<Medicine> medicines;
+    private List<Disease> diagnosedDiseases;
+    private List<Medicine> regularMedicines;
     @CreatedDate
     private LocalDateTime createdDate;
     @LastModifiedDate
     private LocalDateTime modifiedDate;
-    //TODO
+
 }
 

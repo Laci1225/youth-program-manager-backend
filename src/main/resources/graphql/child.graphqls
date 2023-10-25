@@ -40,7 +40,7 @@ input DiseasesInput{
 input MedicinesInput{
     name: String!
     dose: String!
-    takenSince: String
+    takenSince: LocalDateTime
 }
 
 type Query {

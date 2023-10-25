@@ -6,6 +6,6 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 public class Disease {
-    private LocalDateTime diagnosedAt;
     private String name;
+    private LocalDateTime diagnosedAt;
 }

@@ -22,7 +22,7 @@ public class ChildDto {
     private String id;
     private String familyName;
     private String givenName;
-    private String birthDate;
+    private LocalDateTime birthDate;
     private String birthPlace;
     private String address;
     private List<Disease> diagnosedDiseases;

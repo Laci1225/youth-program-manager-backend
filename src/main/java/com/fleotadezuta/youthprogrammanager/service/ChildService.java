@@ -2,7 +2,6 @@ package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.persistance.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistance.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,7 @@ public class ChildService {
 
     public Mono<ChildDto> addChild(ChildDto childDto) {
         var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
-        return childRepository.save(childDoc)
+            return childRepository.save(childDoc)
                 .map(childMapper::fromChildDocumentToChildDto);
 
     }

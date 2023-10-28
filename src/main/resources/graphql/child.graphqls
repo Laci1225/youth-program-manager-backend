@@ -4,7 +4,7 @@ type Child {
     id: ID!
     familyName: String!
     givenName: String!
-    birthDate: String!
+    birthDate: LocalDateTime!
     birthPlace:String!
     address: String!
     diagnosedDiseases: [Diseases!]!
@@ -17,7 +17,7 @@ type Child {
 input ChildInput {
     familyName: String!
     givenName: String!
-    birthDate: String!
+    birthDate: LocalDateTime!
     birthPlace:String!
     address: String!
     diagnosedDiseases: [DiseasesInput!]!

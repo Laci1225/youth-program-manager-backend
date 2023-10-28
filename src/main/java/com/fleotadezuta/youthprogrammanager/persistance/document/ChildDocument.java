@@ -24,11 +24,11 @@ public class ChildDocument {
     private String id;
     private String familyName;
     private String givenName;
-    private String birthDate;
+    private LocalDateTime birthDate;
     private String birthPlace;
     private String address;
-    private List<Disease> diagnosedDiseases;
-    private List<Medicine> regularMedicines;
+    private List<Disease> diagnosedDiseases; //TODO id for disease for removal?
+    private List<Medicine> regularMedicines; //TODO id for medicine for removal?
     @CreatedDate
     private LocalDateTime createdDate;
     @LastModifiedDate

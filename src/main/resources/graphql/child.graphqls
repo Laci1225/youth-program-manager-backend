@@ -1,44 +1,48 @@
 scalar LocalDateTime
 
-type Child {
-    id: ID!
-    familyName: String!
-    givenName: String!
-    birthDate: String!
-    birthPlace:String!
-    address: String!
-    diseases: [Diseases!]!
-    medicines: [Medicines!]
-    createdDate: LocalDateTime
-    modifiedDate: LocalDateTime
-}
-input ChildInput {
-    familyName: String!
-    givenName: String!
-    birthDate: String!
-    birthPlace:String!
-    address: String!
-    diseases: [DiseasesInput!]!
-    medicines: [MedicinesInput!]
-}
-
-type Diseases{
+type Disease{
     name: String!
     diagnosedAt: LocalDateTime
 }
-type Medicines{
+type Medicine{
     name: String!
     dose: String!
     takenSince: LocalDateTime
 }
-input DiseasesInput{
+type Child {
+    id: ID!
+    familyName: String!
+    givenName: String!
+    birthDate: LocalDateTime!
+    birthPlace:String!
+    address: String!
+    diagnosedDiseases: [Disease!]!
+    regularMedicines: [Medicine!]
+    hasDiagnosedDiseases: Boolean!
+    hasRegularMedicines: Boolean!
+    createdDate: LocalDateTime
+    modifiedDate: LocalDateTime
+}
+
+input DiseaseInput{
     name: String!
     diagnosedAt: LocalDateTime!
 }
-input MedicinesInput{
+
+input MedicineInput{
     name: String!
     dose: String!
-    takenSince: String
+    takenSince: LocalDateTime
+}
+
+input ChildInput {
+    familyName: String!
+    givenName: String!
+    birthDate: LocalDateTime!
+    birthPlace:String!
+    address: String!
+    diagnosedDiseases: [DiseaseInput!]!
+    regularMedicines: [MedicineInput!]
 }
 
 type Query {

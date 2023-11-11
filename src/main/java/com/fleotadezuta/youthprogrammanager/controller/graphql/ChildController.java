@@ -19,9 +19,14 @@ public class ChildController {
 
     private final ChildService childService;
 
-    @QueryMapping("children")
+    @QueryMapping("getAllChildren")
     public Flux<ChildDto> getAllChildren() {
         return childService.getAllChildren();
+    }
+
+    @QueryMapping("getChildById")
+    public Mono<ChildDto> getChildById(@Argument String id) {
+        return childService.getChildById(id);
     }
 
     @MutationMapping("addChild")

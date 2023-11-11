@@ -41,12 +41,13 @@ input ChildInput {
     birthDate: LocalDateTime!
     birthPlace:String!
     address: String!
-    diagnosedDiseases: [DiseaseInput!]!
+    diagnosedDiseases: [DiseaseInput!]
     regularMedicines: [MedicineInput!]
 }
 
 type Query {
-    children: [Child!]!
+    getAllChildren: [Child!]!
+    getChildById(id: String): Child!
 }
 type Mutation{
     addChild(child: ChildInput!): Child!

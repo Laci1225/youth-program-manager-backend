@@ -37,6 +37,11 @@ public class ChildController {
         return childService.addChild(child);
     }
 
+    @MutationMapping("updateChild")
+    public Mono<ChildDto> updateChild(@Argument String id, @Valid @RequestBody @Argument ChildDto child) {
+        return childService.updateChild(id, child);
+    }
+
     @MutationMapping("deleteChild")
     public Mono<ChildDto> deleteChild(@Argument String id) {
         return childService.deleteChild(id)

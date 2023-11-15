@@ -39,4 +39,20 @@ public class ChildService {
                         .then(Mono.just(child)))
                 .map(childMapper::fromChildDocumentToChildDto);
     }
+
+    public Mono<ChildDto> updateChild(String id, ChildDto childDto) {
+        var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
+        return childRepository.findById(id)
+                .flatMap(existingChildDoc -> {
+                    childDoc.setId(existingChildDoc.getId());
+                    return childRepository.save(childDoc);
+                })
+                .map(childMapper::fromChildDocumentToChildDto);
+        /*
+        var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
+        var existingChildDoc = childRepository.findById(id);
+        childDoc.setId(existingChildDoc.getId());
+        return childRepository.save(childDoc)
+                .map(childMapper::fromChildDocumentToChildDto);*/
+    }
 }

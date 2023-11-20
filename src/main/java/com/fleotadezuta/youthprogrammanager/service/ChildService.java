@@ -21,6 +21,11 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
+    public Mono<ChildDto> getChildById(String id) {
+        return childRepository.findById(id)
+                .map(childMapper::fromChildDocumentToChildDto);
+    }
+
     public Mono<ChildDto> addChild(ChildDto childDto) {
         var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
         return childRepository.save(childDoc)

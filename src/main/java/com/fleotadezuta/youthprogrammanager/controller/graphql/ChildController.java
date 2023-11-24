@@ -23,8 +23,8 @@ public class ChildController {
 
     @QueryMapping("getAllChildren")
     public Flux<ChildDto> getAllChildren() {
-        var result = childService.getAllChildren();
-        return result.doOnComplete(() -> log.info("All children fetched successfully"));
+        return childService.getAllChildren()
+                .doOnComplete(() -> log.info("All children fetched successfully"));
     }
 
     @QueryMapping("getChildById")
@@ -41,6 +41,6 @@ public class ChildController {
     public Mono<ChildDto> deleteChild(@Argument String id) {
         return childService.deleteChild(id)
                 .doOnSuccess(deletedChild ->
-                        log.info("Deleting Child with ID: " + deletedChild.getId()));
+                        log.info("Deleted Child with ID:" + deletedChild.getId()));
     }
 }

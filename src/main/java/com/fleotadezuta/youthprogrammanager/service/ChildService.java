@@ -48,11 +48,5 @@ public class ChildService {
                     return childRepository.save(childDoc);
                 })
                 .map(childMapper::fromChildDocumentToChildDto);
-        /*
-        var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
-        var existingChildDoc = childRepository.findById(id);
-        childDoc.setId(existingChildDoc.getId());
-        return childRepository.save(childDoc)
-                .map(childMapper::fromChildDocumentToChildDto);*/
     }
 }

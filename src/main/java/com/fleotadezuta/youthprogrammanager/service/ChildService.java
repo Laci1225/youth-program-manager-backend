@@ -32,4 +32,11 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildDto);
 
     }
+
+    public Mono<ChildDto> deleteChild(String id) {
+        return childRepository.findById(id)
+                .flatMap(child -> childRepository.deleteById(id)
+                        .then(Mono.just(child)))
+                .map(childMapper::fromChildDocumentToChildDto);
+    }
 }

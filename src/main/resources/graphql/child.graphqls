@@ -16,7 +16,7 @@ type Child {
     birthDate: LocalDateTime!
     birthPlace:String!
     address: String!
-    diagnosedDiseases: [Disease!]!
+    diagnosedDiseases: [Disease!]
     regularMedicines: [Medicine!]
     hasDiagnosedDiseases: Boolean!
     hasRegularMedicines: Boolean!
@@ -51,5 +51,6 @@ type Query {
 }
 type Mutation{
     addChild(child: ChildInput!): Child!
+    updateChild(id: String!, child: ChildInput!): Child!
     deleteChild(id: String!): Child!
 }

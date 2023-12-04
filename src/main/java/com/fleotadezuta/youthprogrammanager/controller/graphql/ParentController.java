@@ -28,6 +28,7 @@ public class ParentController {
 
     @MutationMapping("addParent")
     public Mono<ParentDto> addParent(@Valid @RequestBody @Argument ParentDto parent) {
-        return parentService.addParent(parent);
+        return parentService.addParent(parent)
+                .doOnSuccess((parentDto) -> log.info("Parent with data:" + parentDto + " fetched successfully"));
     }
 }

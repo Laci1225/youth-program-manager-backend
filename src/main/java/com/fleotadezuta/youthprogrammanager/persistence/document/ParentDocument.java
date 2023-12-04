@@ -24,7 +24,7 @@ public class ParentDocument {
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;
-    private String Address;
+    private String address;
     @CreatedDate
     private LocalDateTime createdDate;
     @LastModifiedDate

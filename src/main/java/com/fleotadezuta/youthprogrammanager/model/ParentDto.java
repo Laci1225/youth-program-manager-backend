@@ -16,5 +16,5 @@ public class ParentDto {
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;
-    private String Address;
+    private String address;
 }

@@ -37,5 +37,14 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
+    public Mono<ParentDto> updateParent(String id, ParentDto parentDto) {
+        return Mono.just(parentDto)
+                .map(parentMapper::fromParentDtoToParentDocument)
+                .flatMap(parentDoc -> {
+                    parentDoc.setId(id);
+                    return parentRepository.save(parentDoc);
+                })
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
 
 }

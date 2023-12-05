@@ -38,6 +38,11 @@ public class ParentController {
                 .doOnSuccess((parentDto) -> log.info("Parent with data:" + parentDto + " fetched successfully"));
     }
 
+    @MutationMapping("updateParent")
+    public Mono<ParentDto> updateParent(@Argument String id, @Valid @RequestBody @Argument ParentDto parent) {
+        return parentService.updateParent(id, parent);
+    }
+
     @MutationMapping("deleteParent")
     public Mono<ParentDto> deleteParent(@Argument String id) {
         return parentService.deleteParent(id)

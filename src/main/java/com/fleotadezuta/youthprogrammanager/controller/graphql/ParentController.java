@@ -26,6 +26,12 @@ public class ParentController {
                 .doOnComplete(() -> log.info("All parents fetched successfully"));
     }
 
+    @QueryMapping("getParentById")
+    public Mono<ParentDto> getParentById(@Argument String id) {
+        return parentService.getParentById(id);
+    }
+
+
     @MutationMapping("addParent")
     public Mono<ParentDto> addParent(@Valid @RequestBody @Argument ParentDto parent) {
         return parentService.addParent(parent)

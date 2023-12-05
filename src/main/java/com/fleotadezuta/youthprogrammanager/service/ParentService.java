@@ -19,9 +19,15 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
+    public Mono<ParentDto> getParentById(String id) {
+        return parentRepository.findById(id)
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
+
     public Mono<ParentDto> addParent(ParentDto parentDto) {
         var parentDoc = parentMapper.fromParentDtoToParentDocument(parentDto);
         return parentRepository.save(parentDoc)
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
+
 }

@@ -37,4 +37,11 @@ public class ParentController {
         return parentService.addParent(parent)
                 .doOnSuccess((parentDto) -> log.info("Parent with data:" + parentDto + " fetched successfully"));
     }
+
+    @MutationMapping("deleteParent")
+    public Mono<ParentDto> deleteParent(@Argument String id) {
+        return parentService.deleteParent(id)
+                .doOnSuccess(deletedParent ->
+                        log.info("Deleted Parent with ID:" + deletedParent.getId()));
+    }
 }

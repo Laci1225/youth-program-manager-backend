@@ -29,23 +29,25 @@ public class ChildController {
 
     @QueryMapping("getChildById")
     public Mono<ChildDto> getChildById(@Argument String id) {
-        return childService.getChildById(id);
+        return childService.getChildById(id)
+                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + id));
     }
 
     @MutationMapping("addChild")
     public Mono<ChildDto> addChild(@Valid @RequestBody @Argument ChildDto child) {
-        return childService.addChild(child);
+        return childService.addChild(child)
+                .doOnSuccess(childDto -> log.info("Added Child with data: " + childDto));
     }
 
     @MutationMapping("updateChild")
     public Mono<ChildDto> updateChild(@Argument String id, @Valid @RequestBody @Argument ChildDto child) {
-        return childService.updateChild(id, child);
+        return childService.updateChild(id, child)
+                .doOnSuccess(childDto -> log.info("Updated Child with ID: " + id));
     }
 
     @MutationMapping("deleteChild")
     public Mono<ChildDto> deleteChild(@Argument String id) {
         return childService.deleteChild(id)
-                .doOnSuccess(deletedChild ->
-                        log.info("Deleted Child with ID:" + deletedChild.getId()));
+                .doOnSuccess(deletedChild -> log.info("Deleted Child with ID: " + deletedChild.getId()));
     }
 }

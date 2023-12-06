@@ -28,25 +28,26 @@ public class ParentController {
 
     @QueryMapping("getParentById")
     public Mono<ParentDto> getParentById(@Argument String id) {
-        return parentService.getParentById(id);
+        return parentService.getParentById(id)
+                .doOnSuccess(parentDto -> log.info("Retrieved Parent by ID: " + id));
     }
-
 
     @MutationMapping("addParent")
     public Mono<ParentDto> addParent(@Valid @RequestBody @Argument ParentDto parent) {
         return parentService.addParent(parent)
-                .doOnSuccess((parentDto) -> log.info("Parent with data:" + parentDto + " fetched successfully"));
+                .doOnSuccess(parentDto -> log.info("Added Parent with data: " + parentDto));
     }
 
     @MutationMapping("updateParent")
     public Mono<ParentDto> updateParent(@Argument String id, @Valid @RequestBody @Argument ParentDto parent) {
-        return parentService.updateParent(id, parent);
+        return parentService.updateParent(id, parent)
+                .doOnSuccess(parentDto -> log.info("Updated Parent with ID: " + id));
     }
 
     @MutationMapping("deleteParent")
     public Mono<ParentDto> deleteParent(@Argument String id) {
         return parentService.deleteParent(id)
-                .doOnSuccess(deletedParent ->
-                        log.info("Deleted Parent with ID:" + deletedParent.getId()));
+                .doOnSuccess(deletedParent -> log.info("Deleted Parent with ID: " + deletedParent.getId()));
     }
+
 }

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TicketDto {
     private String id;
+    private String name;
     private String description;
     private Double price;
     private Integer numberOfParticipants;

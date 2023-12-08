@@ -11,40 +11,41 @@ import reactor.core.publisher.Mono;
 @Service
 @AllArgsConstructor
 public class TicketService {
-    private final TicketMapper tickerMapper;
-    private final TicketRepository tickerRepository;
+    private final TicketMapper ticketMapper;
+    private final TicketRepository ticketRepository;
 
     public Flux<TicketDto> getAllTickets() {
-        return tickerRepository.findAll()
-                .map(tickerMapper::fromTicketDocumentToTicketDto);
+        return ticketRepository.findAll()
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
     public Mono<TicketDto> getTicketById(String id) {
-        return tickerRepository.findById(id)
-                .map(tickerMapper::fromTicketDocumentToTicketDto);
+        return ticketRepository.findById(id)
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
-    public Mono<TicketDto> addTicket(TicketDto tickerDto) {
-        var tickerDoc = tickerMapper.fromTicketDtoToTicketDocument(tickerDto);
-        return tickerRepository.save(tickerDoc)
-                .map(tickerMapper::fromTicketDocumentToTicketDto);
+    public Mono<TicketDto> addTicket(TicketDto ticketDto) {
+        return Mono.just(ticketDto)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
+                .flatMap(ticketRepository::save)
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
     public Mono<TicketDto> deleteTicket(String id) {
-        return tickerRepository.findById(id)
-                .flatMap(ticker -> tickerRepository.deleteById(id)
+        return ticketRepository.findById(id)
+                .flatMap(ticker -> ticketRepository.deleteById(id)
                         .then(Mono.just(ticker)))
-                .map(tickerMapper::fromTicketDocumentToTicketDto);
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
     public Mono<TicketDto> updateTicket(String id, TicketDto tickerDto) {
         return Mono.just(tickerDto)
-                .map(tickerMapper::fromTicketDtoToTicketDocument)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(tickerDoc -> {
                     tickerDoc.setId(id);
-                    return tickerRepository.save(tickerDoc);
+                    return ticketRepository.save(tickerDoc);
                 })
-                .map(tickerMapper::fromTicketDocumentToTicketDto);
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
 }

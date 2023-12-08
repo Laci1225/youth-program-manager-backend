@@ -27,10 +27,10 @@ public class ChildService {
     }
 
     public Mono<ChildDto> addChild(ChildDto childDto) {
-        var childDoc = childMapper.fromChildDtoToChildDocument(childDto);
-        return childRepository.save(childDoc)
+        return Mono.just(childDto)
+                .map(childMapper::fromChildDtoToChildDocument)
+                .flatMap(childRepository::save)
                 .map(childMapper::fromChildDocumentToChildDto);
-
     }
 
     public Mono<ChildDto> deleteChild(String id) {

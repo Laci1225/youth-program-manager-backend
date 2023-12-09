@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class TicketDto {
+public class TicketTypeDto {
     private String id;
     private String name;
     private String description;

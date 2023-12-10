@@ -3,7 +3,7 @@ type TicketType {
     name: String!
     description: String!
     price: Float!
-    numberOfParticipants: Int!
+    numberOfParticipation: Int!
     standardValidityPeriod: Int!
 }
 
@@ -11,12 +11,12 @@ input TicketTypeInput {
     name: String!
     description: String!
     price: Float!
-    numberOfParticipants: Int!
+    numberOfParticipation: Int!
     standardValidityPeriod: Int!
 }
 extend type Query {
     getAllTicketsType: [TicketType!]!
-    getTicketByIdType(id: String!): TicketType!
+    getTicketTypeById(id: String!): TicketType!
 
 }
 extend type Mutation{

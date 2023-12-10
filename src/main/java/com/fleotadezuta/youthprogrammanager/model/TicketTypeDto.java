@@ -14,7 +14,7 @@ public class TicketTypeDto {
     private String name;
     private String description;
     private Double price;
-    private Integer numberOfParticipants;
+    private Integer numberOfParticipation;
     private Integer standardValidityPeriod;
 }
 

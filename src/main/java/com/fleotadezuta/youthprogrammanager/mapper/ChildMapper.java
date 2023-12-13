@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {DiseaseMapper.class, MedicineMapper.class})
+@Mapper(componentModel = "spring", uses = {DiseaseMapper.class, MedicineMapper.class, RelativeParentsMapper.class})
 public interface ChildMapper {
 
     @Mapping(target = "hasDiagnosedDiseases", source = "childDocument.diagnosedDiseases")

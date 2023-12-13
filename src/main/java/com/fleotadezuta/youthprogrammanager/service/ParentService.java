@@ -28,14 +28,6 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Mono<ParentDto> addParent(ParentDto parentDto) {
-        return Mono.just(parentDto)
-                .flatMap(this::validateParent)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parentRepository::save)
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
     public Mono<ParentDto> deleteParent(String id) {
         return parentRepository.findById(id)
                 .flatMap(parent -> parentRepository.deleteById(id)
@@ -45,7 +37,7 @@ public class ParentService {
 
     public Mono<ParentDto> updateParent(String id, ParentDto parentDto) {
         return Mono.just(parentDto)
-                .flatMap(this::validateParent)
+                .flatMap(ParentService::validateParent)
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parentDoc -> {
                     parentDoc.setId(id);
@@ -54,12 +46,12 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    private Mono<ParentDto> validateParent(ParentDto parentDto) {
+    public static Mono<ParentDto> validateParent(ParentDto parentDto) {
         List<String> phoneNumbers = parentDto.getPhoneNumbers();
         if (phoneNumbers == null || phoneNumbers.isEmpty()) {
             return Mono.error(new IllegalArgumentException("Phone number list is empty"));
         }
-        
+
         PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
         return Flux.fromIterable(phoneNumbers)
                 .flatMap(phoneNumber -> Mono.fromCallable(() -> phoneNumberUtil.parse(phoneNumber, "XX")))

@@ -25,7 +25,7 @@ type Child {
     modifiedDate: LocalDateTime
 }
 type RelativeParents {
-    name: String!
+    id: ID!
     isEmergencyContact: Boolean!
 }
 
@@ -52,7 +52,7 @@ input ChildInput {
 }
 
 input RelativeParentsInput {
-    name: String!
+    id: ID!
     isEmergencyContact: Boolean!
 }
 

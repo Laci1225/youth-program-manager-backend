@@ -38,7 +38,7 @@ public class ChildController {
 
     @MutationMapping("addChild")
     public Mono<ChildDto> addChild(@Valid @RequestBody @Argument ChildDto child) {
-        return childService.addChild(child)
+        return childParentFacade.addChild(child)
                 .doOnSuccess(childDto -> log.info("Added Child with data: " + childDto));
     }
 

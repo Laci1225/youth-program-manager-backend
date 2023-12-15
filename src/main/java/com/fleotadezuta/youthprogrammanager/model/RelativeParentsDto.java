@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 public class RelativeParentsDto {
-    private String name;
+    private String id;
     private Boolean isEmergencyContact;
 }

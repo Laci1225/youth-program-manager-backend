@@ -20,34 +20,34 @@ public class TicketTypeController {
 
     private final TicketTypeService ticketTypeService;
 
-    @QueryMapping("getAllTicketsType")
-    public Flux<TicketTypeDto> getAllTickets() {
-        return ticketTypeService.getAllTickets()
-                .doOnComplete(() -> log.info("All tickets fetched successfully"));
+    @QueryMapping("getAllTicketTypes")
+    public Flux<TicketTypeDto> getAllTicketTypes() {
+        return ticketTypeService.getAllTicketTypes()
+                .doOnComplete(() -> log.info("All ticket types fetched successfully"));
     }
 
     @QueryMapping("getTicketTypeById")
-    public Mono<TicketTypeDto> getTicketById(@Argument String id) {
-        return ticketTypeService.getTicketById(id)
-                .doOnSuccess(ticketTypeDto -> log.info("Retrieved Ticket by ID: " + id));
+    public Mono<TicketTypeDto> getTicketTypeById(@Argument String id) {
+        return ticketTypeService.getTicketTypeById(id)
+                .doOnSuccess(ticketTypeDto -> log.info("Retrieved Ticket type by ID: " + id));
     }
 
     @MutationMapping("addTicketType")
-    public Mono<TicketTypeDto> addTicket(@Valid @RequestBody @Argument TicketTypeDto ticket) {
-        return ticketTypeService.addTicket(ticket)
-                .doOnSuccess(ticketTypeDto -> log.info("Added Ticket with data: " + ticketTypeDto));
+    public Mono<TicketTypeDto> addTicketType(@Valid @RequestBody @Argument TicketTypeDto ticket) {
+        return ticketTypeService.addTicketType(ticket)
+                .doOnSuccess(ticketTypeDto -> log.info("Added Ticket type with data: " + ticketTypeDto));
     }
 
     @MutationMapping("updateTicketType")
-    public Mono<TicketTypeDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketTypeDto ticket) {
-        return ticketTypeService.updateTicket(id, ticket)
-                .doOnSuccess(ticketTypeDto -> log.info("Updated Ticket with ID: " + id));
+    public Mono<TicketTypeDto> updateTicketType(@Argument String id, @Valid @RequestBody @Argument TicketTypeDto ticket) {
+        return ticketTypeService.updateTicketType(id, ticket)
+                .doOnSuccess(ticketTypeDto -> log.info("Updated Ticket type with ID: " + id));
     }
 
-    @MutationMapping("deleteTicketType")
-    public Mono<TicketTypeDto> deleteTicket(@Argument String id) {
-        return ticketTypeService.deleteTicket(id)
-                .doOnSuccess(deletedTicket -> log.info("Deleted Ticket with ID: " + deletedTicket.getId()));
+    @MutationMapping("deletedTicketType")
+    public Mono<TicketTypeDto> deletedTicketType(@Argument String id) {
+        return ticketTypeService.deletedTicketType(id)
+                .doOnSuccess(deletedTicket -> log.info("Deleted Ticket type with ID: " + deletedTicket.getId()));
     }
 
 }

@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface TicketTypeMapper {
-    TicketTypeDto fromTicketDocumentToTicketDto(TicketTypeDocument parent);
+    TicketTypeDto fromTicketTypeDocumentToTicketTypeDto(TicketTypeDocument parent);
 
-    TicketTypeDocument fromTicketDtoToTicketDocument(TicketTypeDto parentDto);
+    TicketTypeDocument fromTicketTypeDtoToTicketTypeDocument(TicketTypeDto parentDto);
 }

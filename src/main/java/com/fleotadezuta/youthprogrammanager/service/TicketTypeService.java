@@ -14,38 +14,38 @@ public class TicketTypeService {
     private final TicketTypeMapper ticketTypeMapper;
     private final TicketTypeRepository ticketTypeRepository;
 
-    public Flux<TicketTypeDto> getAllTickets() {
+    public Flux<TicketTypeDto> getAllTicketTypes() {
         return ticketTypeRepository.findAll()
-                .map(ticketTypeMapper::fromTicketDocumentToTicketDto);
+                .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> getTicketById(String id) {
+    public Mono<TicketTypeDto> getTicketTypeById(String id) {
         return ticketTypeRepository.findById(id)
-                .map(ticketTypeMapper::fromTicketDocumentToTicketDto);
+                .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> addTicket(TicketTypeDto ticketTypeDto) {
+    public Mono<TicketTypeDto> addTicketType(TicketTypeDto ticketTypeDto) {
         return Mono.just(ticketTypeDto)
-                .map(ticketTypeMapper::fromTicketDtoToTicketDocument)
+                .map(ticketTypeMapper::fromTicketTypeDtoToTicketTypeDocument)
                 .flatMap(ticketTypeRepository::save)
-                .map(ticketTypeMapper::fromTicketDocumentToTicketDto);
+                .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> deleteTicket(String id) {
+    public Mono<TicketTypeDto> deletedTicketType(String id) {
         return ticketTypeRepository.findById(id)
-                .flatMap(ticker -> ticketTypeRepository.deleteById(id)
-                        .then(Mono.just(ticker)))
-                .map(ticketTypeMapper::fromTicketDocumentToTicketDto);
+                .flatMap(ticketType -> ticketTypeRepository.deleteById(id)
+                        .then(Mono.just(ticketType)))
+                .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> updateTicket(String id, TicketTypeDto tickerDto) {
+    public Mono<TicketTypeDto> updateTicketType(String id, TicketTypeDto tickerDto) {
         return Mono.just(tickerDto)
-                .map(ticketTypeMapper::fromTicketDtoToTicketDocument)
-                .flatMap(tickerDoc -> {
-                    tickerDoc.setId(id);
-                    return ticketTypeRepository.save(tickerDoc);
+                .map(ticketTypeMapper::fromTicketTypeDtoToTicketTypeDocument)
+                .flatMap(ticketTypeDoc -> {
+                    ticketTypeDoc.setId(id);
+                    return ticketTypeRepository.save(ticketTypeDoc);
                 })
-                .map(ticketTypeMapper::fromTicketDocumentToTicketDto);
+                .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
 }

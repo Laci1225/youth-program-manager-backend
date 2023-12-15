@@ -47,7 +47,7 @@ public class TicketTypeController {
     @MutationMapping("deletedTicketType")
     public Mono<TicketTypeDto> deletedTicketType(@Argument String id) {
         return ticketTypeService.deletedTicketType(id)
-                .doOnSuccess(deletedTicket -> log.info("Deleted Ticket type with ID: " + deletedTicket.getId()));
+                .doOnSuccess(deletedTicketType -> log.info("Deleted Ticket type with ID: " + deletedTicketType.getId()));
     }
 
 }

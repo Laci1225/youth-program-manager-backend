@@ -38,8 +38,8 @@ public class TicketTypeService {
                 .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> updateTicketType(String id, TicketTypeDto tickerDto) {
-        return Mono.just(tickerDto)
+    public Mono<TicketTypeDto> updateTicketType(String id, TicketTypeDto ticketTypeDto) {
+        return Mono.just(ticketTypeDto)
                 .map(ticketTypeMapper::fromTicketTypeDtoToTicketTypeDocument)
                 .flatMap(ticketTypeDoc -> {
                     ticketTypeDoc.setId(id);

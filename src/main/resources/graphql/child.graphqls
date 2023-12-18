@@ -24,6 +24,21 @@ type Child {
     createdDate: LocalDateTime
     modifiedDate: LocalDateTime
 }
+type ChildWithParent{
+    id: ID!
+    familyName: String!
+    givenName: String!
+    birthDate: LocalDateTime!
+    birthPlace:String!
+    address: String!
+    diagnosedDiseases: [Disease!]
+    regularMedicines: [Medicine!]
+    hasDiagnosedDiseases: Boolean!
+    hasRegularMedicines: Boolean!
+    createdDate: LocalDateTime
+    modifiedDate: LocalDateTime
+    parents: [ParentWithContact]
+}
 type RelativeParents {
     id: ID!
     isEmergencyContact: Boolean!
@@ -58,7 +73,7 @@ input RelativeParentsInput {
 
 type Query {
     getAllChildren: [Child!]!
-    getChildById(id: String!): Child!
+    getChildById(id: String!): ChildWithParent!
     getPotentialParents(name: String!): [Parent]
 }
 type Mutation{

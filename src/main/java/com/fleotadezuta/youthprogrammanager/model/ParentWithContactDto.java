@@ -11,10 +11,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class ParentDto {
-    private String id;
+public class ParentWithContactDto {
+    private String parentId;
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;
     private String address;
+    private Boolean isEmergencyContact;
 }

@@ -5,6 +5,14 @@ type Parent {
     phoneNumbers:[String!]!
     address: String
 }
+type ParentWithContact {
+    id: ID!
+    familyName: String!
+    givenName: String!
+    phoneNumbers:[String!]!
+    address: String
+    isEmergencyContact: Boolean!
+}
 
 input ParentInput {
     familyName: String!

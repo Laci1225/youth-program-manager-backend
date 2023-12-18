@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import jakarta.validation.Valid;
@@ -31,9 +32,9 @@ public class ChildController {
     }
 
     @QueryMapping("getChildById")
-    public Mono<ChildDto> getChildById(@Argument String id) {
-        return childService.getChildById(id)
-                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + id));
+    public Mono<ChildWithParentsDto> getChildById(@Argument String id) {
+        return childParentFacade.getChildById(id)
+                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
     }
 
     @MutationMapping("addChild")

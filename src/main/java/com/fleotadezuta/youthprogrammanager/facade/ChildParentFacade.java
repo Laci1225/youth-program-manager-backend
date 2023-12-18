@@ -3,19 +3,22 @@ package com.fleotadezuta.youthprogrammanager.facade;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
-import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
+import com.fleotadezuta.youthprogrammanager.model.ParentWithContactDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ParentRepository;
-import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -50,33 +53,48 @@ public class ChildParentFacade {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    private boolean matchesChildFullName(String name, ChildDocument child) {
-        String fullName1 = child.getFamilyName() + " " + child.getGivenName();
-        String fullName2 = child.getGivenName() + " " + child.getFamilyName();
-        return fullName1.toLowerCase().startsWith(name.toLowerCase())
-                || fullName2.toLowerCase().startsWith(name.toLowerCase());
-    }
+    public Mono<ChildWithParentsDto> getChildById(String id) {
+        return childRepository.findById(id)
+                .flatMap(child -> {
+                    List<String> parentIds = Optional.ofNullable(child.getRelativeParents())
+                            .map(relParents -> relParents.stream()
+                                    .map(RelativeParents::getId)
+                                    .toList())
+                            .orElse(Collections.emptyList());
 
-    public Flux<ChildDto> getPotentialChildren(String name) {
-        var full = childRepository.findAll();
-        var allChildren = full
-                .filter(child -> matchesChildFullName(name, child));
-        var results = Flux.merge(allChildren);
-        return results.map(childMapper::fromChildDocumentToChildDto);
-    }
+                    return parentRepository.findAllById(parentIds)
+                            .collectList()
+                            .map(parents -> {
+                                ChildDto childDto = childMapper.fromChildDocumentToChildDto(child);
 
-    public Mono<ParentDto> addParent(ParentDto parentDto) {
-        return childRepository.findById(parentDto.getChildId())
-                .flatMap(childDocument -> {
-                    childDocument.setRelativeParents(List.of(new RelativeParents(parentDto.getChildId(), true)));
-                    return childRepository.save(childDocument)
-                            .thenReturn(childDocument);
-                })
-                .then(ParentService.validateParent(parentDto)
-                        .map(parentMapper::fromParentDtoToParentDocument)
-                        .flatMap(parentRepository::save)
-                        .map(parentMapper::fromParentDocumentToParentDto)
-                );
-    }
+                                ChildWithParentsDto childWithParentsDto = ChildWithParentsDto.builder()
+                                        .id(childDto.getId())
+                                        .familyName(childDto.getFamilyName())
+                                        .givenName(childDto.getGivenName())
+                                        .birthDate(childDto.getBirthDate())
+                                        .birthPlace(childDto.getBirthPlace())
+                                        .address(childDto.getAddress())
+                                        .diagnosedDiseases(childDto.getDiagnosedDiseases())
+                                        .regularMedicines(childDto.getRegularMedicines())
+                                        .createdDate(childDto.getCreatedDate())
+                                        .modifiedDate(childDto.getModifiedDate())
+                                        .build();
 
+                                List<ParentWithContactDto> parentsList = parents.stream()
+                                        .map(parent -> ParentWithContactDto.builder()
+                                                .parentId(parent.getId())
+                                                .familyName(parent.getFamilyName())
+                                                .givenName(parent.getGivenName())
+                                                .phoneNumbers(parent.getPhoneNumbers())
+                                                .address(parent.getAddress())
+                                                .isEmergencyContact(true)
+                                                .build())
+                                        .collect(Collectors.toList());
+
+                                childWithParentsDto.setParents(parentsList);
+
+                                return childWithParentsDto;
+                            });
+                });
+    }
 }

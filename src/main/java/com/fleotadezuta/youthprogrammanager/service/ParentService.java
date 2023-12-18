@@ -28,6 +28,14 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
+    public Mono<ParentDto> addParent(ParentDto parentDto) {
+        return Mono.just(parentDto)
+                .flatMap(ParentService::validateParent)
+                .map(parentMapper::fromParentDtoToParentDocument)
+                .flatMap(parentRepository::save)
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
+
     public Mono<ParentDto> deleteParent(String id) {
         return parentRepository.findById(id)
                 .flatMap(parent -> parentRepository.deleteById(id)

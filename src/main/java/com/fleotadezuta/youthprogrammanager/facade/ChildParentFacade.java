@@ -4,13 +4,18 @@ import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
+import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ParentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -36,14 +41,27 @@ public class ChildParentFacade {
     }
 
     public Mono<ChildDto> addChild(ChildDto childDto) {
-        childDto.getRelativeParents().stream()
+        List<RelativeParents> relativeParents = childDto.getRelativeParents();
+        if (relativeParents == null || relativeParents.isEmpty()) {
+            ChildDocument childDocument = childMapper.fromChildDtoToChildDocument(childDto);
+            return childRepository.save(childDocument)
+                    .map(childMapper::fromChildDocumentToChildDto);
+        }
+        List<Mono<ParentDocument>> parentMonos = relativeParents.stream()
                 .map(parent -> parentRepository.findById(parent.getId())
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid parentId: " + parent.getId()))));
-        return Mono.just(childDto)
-                .map(childMapper::fromChildDtoToChildDocument)
-                .flatMap(childRepository::save)
-                .map(childMapper::fromChildDocumentToChildDto);
+                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid parentId: " + parent.getId()))))
+                .collect(Collectors.toList());
+
+        return Flux.merge(parentMonos)
+                .collectList()
+                .flatMap(parents -> {
+                    ChildDocument childDocument = childMapper.fromChildDtoToChildDocument(childDto);
+                    return childRepository.save(childDocument)
+                            .map(childMapper::fromChildDocumentToChildDto);
+                })
+                .onErrorResume(Mono::error);
     }
+
 
     /* public Mono<ChildWithParentsDto> getChildById(String id) {
         return childRepository.findById(id)

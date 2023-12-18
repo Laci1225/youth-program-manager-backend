@@ -73,7 +73,7 @@ input RelativeParentsInput {
 
 type Query {
     getAllChildren: [Child!]!
-    getChildById(id: String!): ChildWithParent!
+    getChildById(id: String!): Child!
     getPotentialParents(name: String!): [Parent]
 }
 type Mutation{

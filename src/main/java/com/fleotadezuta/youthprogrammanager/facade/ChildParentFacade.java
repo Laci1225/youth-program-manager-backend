@@ -3,22 +3,14 @@ package com.fleotadezuta.youthprogrammanager.facade;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
-import com.fleotadezuta.youthprogrammanager.model.ParentWithContactDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
-import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ParentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -53,7 +45,7 @@ public class ChildParentFacade {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Mono<ChildWithParentsDto> getChildById(String id) {
+    /* public Mono<ChildWithParentsDto> getChildById(String id) {
         return childRepository.findById(id)
                 .flatMap(child -> {
                     List<String> parentIds = Optional.ofNullable(child.getRelativeParents())
@@ -96,5 +88,5 @@ public class ChildParentFacade {
                                 return childWithParentsDto;
                             });
                 });
-    }
+    }*/
 }

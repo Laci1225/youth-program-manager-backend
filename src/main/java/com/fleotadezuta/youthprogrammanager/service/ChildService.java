@@ -21,6 +21,10 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
+    public Mono<ChildDto> getChildById(String id) {
+        return childRepository.findById(id)
+                .map(childMapper::fromChildDocumentToChildDto);
+    }
 
     public Mono<ChildDto> deleteChild(String id) {
         return childRepository.findById(id)

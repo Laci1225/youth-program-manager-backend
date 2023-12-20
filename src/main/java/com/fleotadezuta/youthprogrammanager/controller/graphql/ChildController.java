@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import jakarta.validation.Valid;
@@ -43,9 +44,9 @@ public class ChildController {
     }
 
     @MutationMapping("updateChild")
-    public Mono<ChildDto> updateChild(@Argument String id, @Valid @RequestBody @Argument ChildDto child) {
-        return childService.updateChild(id, child)
-                .doOnSuccess(childDto -> log.info("Updated Child with ID: " + id));
+    public Mono<ChildDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
+        return childService.updateChild(child)
+                .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }
 
     @MutationMapping("deleteChild")

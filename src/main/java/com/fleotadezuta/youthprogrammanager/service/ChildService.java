@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,11 +34,11 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Mono<ChildDto> updateChild(String id, ChildDto childDto) {
-        return Mono.just(childDto)
-                .map(childMapper::fromChildDtoToChildDocument)
+    public Mono<ChildDto> updateChild(ChildUpdateDto childUpdateDto) {
+        return Mono.just(childUpdateDto)
+                .map(childMapper::fromChildUpdateDtoToChildDocument)
                 .flatMap(childDoc -> {
-                    childDoc.setId(id);
+                    childDoc.setId(childUpdateDto.getId());
                     return childRepository.save(childDoc);
                 })
                 .map(childMapper::fromChildDocumentToChildDto);

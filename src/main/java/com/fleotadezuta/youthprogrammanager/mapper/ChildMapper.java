@@ -1,5 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.mapper;
 
+import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Disease;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Medicine;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
@@ -25,4 +26,8 @@ public interface ChildMapper {
     }
 
     ChildDocument fromChildDtoToChildDocument(ChildDto childDto);
+
+    ChildDocument fromChildUpdateDtoToChildDocument(ChildUpdateDto childUpdateDto);
+
+    ChildUpdateDto fromChildDocumentToChildUpdateDto(ChildDocument childDocument);
 }

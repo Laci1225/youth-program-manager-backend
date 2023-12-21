@@ -44,7 +44,7 @@ public class ChildController {
     }
 
     @MutationMapping("updateChild")
-    public Mono<ChildDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
+    public Mono<ChildUpdateDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
         return childService.updateChild(child)
                 .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }

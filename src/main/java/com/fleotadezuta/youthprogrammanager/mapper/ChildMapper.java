@@ -29,5 +29,7 @@ public interface ChildMapper {
 
     ChildDocument fromChildUpdateDtoToChildDocument(ChildUpdateDto childUpdateDto);
 
+    @Mapping(target = "hasDiagnosedDiseases", source = "childDocument.diagnosedDiseases")
+    @Mapping(target = "hasRegularMedicines", source = "childDocument.regularMedicines")
     ChildUpdateDto fromChildDocumentToChildUpdateDto(ChildDocument childDocument);
 }

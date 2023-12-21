@@ -34,13 +34,13 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Mono<ChildDto> updateChild(ChildUpdateDto childUpdateDto) {
+    public Mono<ChildUpdateDto> updateChild(ChildUpdateDto childUpdateDto) {
         return Mono.just(childUpdateDto)
                 .map(childMapper::fromChildUpdateDtoToChildDocument)
                 .flatMap(childDoc -> {
                     childDoc.setId(childUpdateDto.getId());
                     return childRepository.save(childDoc);
                 })
-                .map(childMapper::fromChildDocumentToChildDto);
+                .map(childMapper::fromChildDocumentToChildUpdateDto);
     }
 }

@@ -26,18 +26,9 @@ public class ChildParentFacade {
     private final ParentRepository parentRepository;
 
     public Flux<ParentDto> getPotentialParents(String name) {
-        var full = parentRepository.findAll();
-        var allParents = full
-                .filter(parent -> matchesFullName(name, parent));
-        var results = Flux.merge(allParents);
-        return results.map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    private boolean matchesFullName(String name, ParentDocument parent) {
-        String fullName1 = parent.getFamilyName() + " " + parent.getGivenName();
-        String fullName2 = parent.getGivenName() + " " + parent.getFamilyName();
-        return fullName1.toLowerCase().startsWith(name.toLowerCase())
-                || fullName2.toLowerCase().startsWith(name.toLowerCase());
+        return parentRepository.findByFullName(name).map(
+                parentMapper::fromParentDocumentToParentDto
+        );
     }
 
     public Mono<ChildDto> addChild(ChildDto childDto) {

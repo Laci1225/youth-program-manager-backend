@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
+import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ParentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,13 +37,6 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Mono<ParentDto> deleteParent(String id) {
-        return parentRepository.findById(id)
-                .flatMap(parent -> parentRepository.deleteById(id)
-                        .then(Mono.just(parent)))
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
     public Mono<ParentDto> updateParent(String id, ParentDto parentDto) {
         return Mono.just(parentDto)
                 .flatMap(ParentService::validateParent)
@@ -73,4 +67,18 @@ public class ParentService {
                     }
                 });
     }
+
+    public Flux<ParentDto> findByFullName(String name) {
+        return parentRepository.findByFullName(name).map(parentMapper::fromParentDocumentToParentDto);
+    }
+
+    public Mono<ParentDocument> findById(String id) {
+        return parentRepository.findById(id);
+    }
+
+    public Mono<ParentDocument> deleteById(String id) {
+        return parentRepository.findById(id)
+                .flatMap(parentRepository.deleteById(id)::thenReturn);
+    }
+
 }

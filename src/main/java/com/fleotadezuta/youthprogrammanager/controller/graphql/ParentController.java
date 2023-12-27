@@ -1,5 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
+import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 public class ParentController {
 
     private final ParentService parentService;
+    private final ChildParentFacade childParentFacade;
 
     @QueryMapping("getAllParents")
     public Flux<ParentDto> getAllParents() {
@@ -46,7 +48,7 @@ public class ParentController {
 
     @MutationMapping("deleteParent")
     public Mono<ParentDto> deleteParent(@Argument String id) {
-        return parentService.deleteParent(id)
+        return childParentFacade.deleteParent(id)
                 .doOnSuccess(deletedParent -> log.info("Deleted Parent with ID: " + deletedParent.getId()));
     }
 }

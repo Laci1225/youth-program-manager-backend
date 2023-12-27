@@ -1,6 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.persistence.repository;
 
-import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;

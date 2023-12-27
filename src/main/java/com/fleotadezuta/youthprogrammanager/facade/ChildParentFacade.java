@@ -8,7 +8,8 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
-import com.fleotadezuta.youthprogrammanager.persistence.repository.ParentRepository;
+import com.fleotadezuta.youthprogrammanager.service.ChildService;
+import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -23,12 +24,11 @@ public class ChildParentFacade {
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
     private final ParentMapper parentMapper;
-    private final ParentRepository parentRepository;
+    private final ParentService parentService;
+    private final ChildService childService;
 
     public Flux<ParentDto> getPotentialParents(String name) {
-        return parentRepository.findByFullName(name).map(
-                parentMapper::fromParentDocumentToParentDto
-        );
+        return parentService.findByFullName(name);
     }
 
     public Mono<ChildDto> addChild(ChildDto childDto) {
@@ -39,7 +39,7 @@ public class ChildParentFacade {
                     .map(childMapper::fromChildDocumentToChildDto);
         }
         List<Mono<ParentDocument>> parentMonos = relativeParents.stream()
-                .map(parent -> parentRepository.findById(parent.getId())
+                .map(parent -> parentService.findById(parent.getId())
                         .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid parentId: " + parent.getId()))))
                 .collect(Collectors.toList());
 
@@ -52,6 +52,24 @@ public class ChildParentFacade {
                 })
                 .onErrorResume(Mono::error);
     }
+
+    public Mono<ParentDto> deleteParent(String id) {
+        return parentService.findById(id)
+                .flatMap(parent -> parentService.deleteById(id)
+                        .then(updateChildren(parent.getId()))
+                        .thenReturn(parent))
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
+
+    private Mono<Void> updateChildren(String parentIdToRemove) {
+        return childService.findByParentId(parentIdToRemove)
+                .flatMap(child -> {
+                    child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
+                    return childService.updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
+                })
+                .then();
+    }
+
 
 
     /* public Mono<ChildWithParentsDto> getChildById(String id) {

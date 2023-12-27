@@ -3,7 +3,9 @@ package com.fleotadezuta.youthprogrammanager.facade;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
+import com.fleotadezuta.youthprogrammanager.model.ParentWithContactDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
@@ -15,7 +17,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,9 +74,7 @@ public class ChildParentFacade {
                 .then();
     }
 
-
-
-    /* public Mono<ChildWithParentsDto> getChildById(String id) {
+    public Mono<ChildWithParentsDto> getChildById(String id) {
         return childRepository.findById(id)
                 .flatMap(child -> {
                     List<String> parentIds = Optional.ofNullable(child.getRelativeParents())
@@ -81,39 +83,28 @@ public class ChildParentFacade {
                                     .toList())
                             .orElse(Collections.emptyList());
 
-                    return parentRepository.findAllById(parentIds)
+                    return parentService.findAllById(parentIds)
                             .collectList()
                             .map(parents -> {
                                 ChildDto childDto = childMapper.fromChildDocumentToChildDto(child);
 
                                 ChildWithParentsDto childWithParentsDto = ChildWithParentsDto.builder()
-                                        .id(childDto.getId())
-                                        .familyName(childDto.getFamilyName())
-                                        .givenName(childDto.getGivenName())
-                                        .birthDate(childDto.getBirthDate())
-                                        .birthPlace(childDto.getBirthPlace())
-                                        .address(childDto.getAddress())
-                                        .diagnosedDiseases(childDto.getDiagnosedDiseases())
-                                        .regularMedicines(childDto.getRegularMedicines())
-                                        .createdDate(childDto.getCreatedDate())
-                                        .modifiedDate(childDto.getModifiedDate())
-                                        .build();
+                                        .childDto(childDto).build();
 
                                 List<ParentWithContactDto> parentsList = parents.stream()
                                         .map(parent -> ParentWithContactDto.builder()
-                                                .parentId(parent.getId())
-                                                .familyName(parent.getFamilyName())
-                                                .givenName(parent.getGivenName())
-                                                .phoneNumbers(parent.getPhoneNumbers())
-                                                .address(parent.getAddress())
-                                                .isEmergencyContact(true)
+                                                .parentDto(parent)
+                                                .isEmergencyContact(childDto.getRelativeParents()
+                                                        .stream()
+                                                        .filter(a -> a.getId().equals(parent.getId()))
+                                                        .findFirst()
+                                                        .map(RelativeParents::getIsEmergencyContact)
+                                                        .orElse(false))
                                                 .build())
                                         .collect(Collectors.toList());
-
                                 childWithParentsDto.setParents(parentsList);
-
                                 return childWithParentsDto;
                             });
                 });
-    }*/
+    }
 }

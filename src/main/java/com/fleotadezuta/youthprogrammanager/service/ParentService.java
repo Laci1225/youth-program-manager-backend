@@ -81,4 +81,8 @@ public class ParentService {
                 .flatMap(parentRepository.deleteById(id)::thenReturn);
     }
 
+    public Flux<ParentDto> findAllById(List<String> parentIds) {
+        return parentRepository.findAllById(parentIds)
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
 }

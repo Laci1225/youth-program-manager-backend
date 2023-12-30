@@ -4,11 +4,16 @@ import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -31,6 +36,14 @@ public class ChildService {
     }
 
     public Mono<ChildUpdateDto> updateChild(ChildUpdateDto childUpdateDto) {
+        List<String> parentIds = childUpdateDto.getRelativeParents()
+                .stream()
+                .map(RelativeParents::getId)
+                .toList();
+        Set<String> uniqueParentIds = new HashSet<>(parentIds);
+        if (parentIds.size() != uniqueParentIds.size()) {
+            return Mono.error(new IllegalArgumentException("Relative parent IDs are not unique"));
+        }
         return Mono.just(childUpdateDto)
                 .map(childMapper::fromChildUpdateDtoToChildDocument)
                 .flatMap(childDoc -> {
@@ -39,6 +52,7 @@ public class ChildService {
                 })
                 .map(childMapper::fromChildDocumentToChildUpdateDto);
     }
+
 
     public Flux<ChildDocument> findByParentId(String parentIdToRemove) {
         return childRepository.findChildDocumentsByRelativeParents_Id(parentIdToRemove);

@@ -82,29 +82,34 @@ public class ChildParentFacade {
                                     .map(RelativeParents::getId)
                                     .toList())
                             .orElse(Collections.emptyList());
-
                     return parentService.findAllById(parentIds)
-                            .collectList()
-                            .map(parents -> {
-                                ChildDto childDto = childMapper.fromChildDocumentToChildDto(child);
-
-                                ChildWithParentsDto childWithParentsDto = ChildWithParentsDto.builder()
-                                        .childDto(childDto).build();
-
-                                List<ParentWithContactDto> parentsList = parents.stream()
-                                        .map(parent -> ParentWithContactDto.builder()
-                                                .parentDto(parent)
-                                                .isEmergencyContact(childDto.getRelativeParents()
-                                                        .stream()
-                                                        .filter(a -> a.getId().equals(parent.getId()))
-                                                        .findFirst()
-                                                        .map(RelativeParents::getIsEmergencyContact)
-                                                        .orElse(false))
-                                                .build())
-                                        .collect(Collectors.toList());
-                                childWithParentsDto.setParents(parentsList);
-                                return childWithParentsDto;
+                            .collectMap(ParentDto::getId, parent -> child.getRelativeParents()
+                                    .stream()
+                                    .filter(rp -> rp.getId().equals(parent.getId()))
+                                    .findFirst()
+                                    .map(RelativeParents::getIsEmergencyContact)
+                                    .orElseThrow(() -> new IllegalArgumentException(""))
+                            )
+                            .flatMap(parentsEmergencyContactMap -> {
+                                ChildWithParentsDto childWithParentsDto = childMapper.fromChildDtoToChildWithParentsDocument(child);
+                                Mono<List<ParentWithContactDto>> parentsListMono = Flux.fromIterable(parentsEmergencyContactMap.entrySet())
+                                        .flatMap(entry -> {
+                                            String parentId = entry.getKey();
+                                            Boolean isEmergencyContact = entry.getValue();
+                                            return parentService.findById(parentId)
+                                                    .map(parentMapper::fromParentDocumentToParentDto)
+                                                    .map(parentDto -> ParentWithContactDto.builder()
+                                                            .parentDto(parentDto)
+                                                            .isEmergencyContact(isEmergencyContact)
+                                                            .build());
+                                        })
+                                        .collectList();
+                                return parentsListMono.map(parentsList -> {
+                                    childWithParentsDto.setParents(parentsList);
+                                    return childWithParentsDto;
+                                });
                             });
                 });
     }
+
 }

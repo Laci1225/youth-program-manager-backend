@@ -1,6 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.mapper;
 
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Disease;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Medicine;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
@@ -32,4 +33,8 @@ public interface ChildMapper {
     @Mapping(target = "hasDiagnosedDiseases", source = "childDocument.diagnosedDiseases")
     @Mapping(target = "hasRegularMedicines", source = "childDocument.regularMedicines")
     ChildUpdateDto fromChildDocumentToChildUpdateDto(ChildDocument childDocument);
+
+    @Mapping(target = "hasDiagnosedDiseases", source = "childDocument.diagnosedDiseases")
+    @Mapping(target = "hasRegularMedicines", source = "childDocument.regularMedicines")
+    ChildWithParentsDto fromChildDtoToChildWithParentsDocument(ChildDocument childDocument);
 }

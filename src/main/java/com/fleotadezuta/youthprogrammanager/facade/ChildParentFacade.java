@@ -2,10 +2,7 @@ package com.fleotadezuta.youthprogrammanager.facade;
 
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
-import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
-import com.fleotadezuta.youthprogrammanager.model.ParentDto;
-import com.fleotadezuta.youthprogrammanager.model.ParentWithContactDto;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
@@ -13,6 +10,7 @@ import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildReposito
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class ChildParentFacade {
     private final ChildRepository childRepository;
@@ -33,6 +32,10 @@ public class ChildParentFacade {
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
+    }
+
+    public Flux<ChildDto> getPotentialChildren(String name) {
+        return childService.findByFullName(name);
     }
 
     public Mono<ChildDto> addChild(ChildDto childDto) {
@@ -111,5 +114,56 @@ public class ChildParentFacade {
                             });
                 });
     }
+
+    public Mono<ParentWithChildrenDto> getParentById(String id) {
+        return parentService.findById(id)
+                .flatMap(parent -> childService.findByParentId(parent.getId())
+                        .collectList()
+                        .map(children -> {
+                            var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
+                            List<ChildDto> childDtos = children.stream()
+                                    .map(childMapper::fromChildDocumentToChildDto)
+                                    .collect(Collectors.toList());
+                            parentWithChildrenDto.setChildDtos(childDtos);
+                            return parentWithChildrenDto;
+                        }));
+    }
+
+    public Mono<ParentDto> addParent(ParentCreateDto parentCreateDto) {
+        var parentDto = parentMapper.fromParentCreateDtoToParentDto(parentCreateDto);
+        log.info("a" + parentDto);
+
+        return parentService.validateParent(parentDto)
+                .map(parentMapper::fromParentDtoToParentDocument)
+                .flatMap(parentService::save)
+                .flatMap(validatedParent -> childService.findById(parentCreateDto.getChildId())
+                        .flatMap(childDocument -> {
+                            log.info("a" + childDocument);
+                            var relativeParents = childDocument.getRelativeParents();
+                            relativeParents.add(new RelativeParents(validatedParent.getId(), true));
+                            childDocument.setRelativeParents(relativeParents);
+                            log.info("b" + childDocument);
+                            return childService.save(childDocument)
+                                    .thenReturn(validatedParent);
+                        })
+                )
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
+
+
+
+
+    /*public Mono<ParentDto> updateParent(String id, ParentUpdateDto parentUpdateDto) {
+        var parentDto = parentMapper.fromParentUpdateDtoToParentDto(parentUpdateDto);
+        return Mono.just(parentDto)
+                .flatMap(parentService::validateParent)
+                .map(parentMapper::fromParentDtoToParentDocument)
+                .flatMap(parentDoc -> {
+                    parentDoc.setId(id);
+                    return parentService.save(parentDoc);
+                })
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
+*/
 
 }

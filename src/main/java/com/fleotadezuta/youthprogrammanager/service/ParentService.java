@@ -29,26 +29,7 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Mono<ParentDto> addParent(ParentDto parentDto) {
-        return Mono.just(parentDto)
-                .flatMap(ParentService::validateParent)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parentRepository::save)
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public Mono<ParentDto> updateParent(String id, ParentDto parentDto) {
-        return Mono.just(parentDto)
-                .flatMap(ParentService::validateParent)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parentDoc -> {
-                    parentDoc.setId(id);
-                    return parentRepository.save(parentDoc);
-                })
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public static Mono<ParentDto> validateParent(ParentDto parentDto) {
+    public Mono<ParentDto> validateParent(ParentDto parentDto) {
         List<String> phoneNumbers = parentDto.getPhoneNumbers();
         if (phoneNumbers == null || phoneNumbers.isEmpty()) {
             return Mono.error(new IllegalArgumentException("Phone number list is empty"));
@@ -84,5 +65,9 @@ public class ParentService {
     public Flux<ParentDto> findAllById(List<String> parentIds) {
         return parentRepository.findAllById(parentIds)
                 .map(parentMapper::fromParentDocumentToParentDto);
+    }
+
+    public Mono<ParentDocument> save(ParentDocument parentDocument) {
+        return parentRepository.save(parentDocument);
     }
 }

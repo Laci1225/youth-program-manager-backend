@@ -53,8 +53,23 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildUpdateDto);
     }
 
+    public Flux<ChildDto> findByFullName(String name) {
+        return childRepository.findByFullName(name).map(childMapper::fromChildDocumentToChildDto);
+    }
 
     public Flux<ChildDocument> findByParentId(String parentIdToRemove) {
         return childRepository.findChildDocumentsByRelativeParents_Id(parentIdToRemove);
+    }
+
+    public Mono<ChildDocument> findById(String id) {
+        return childRepository.findById(id);
+    }
+
+    public Flux<ChildDocument> findAllByIds(List<String> childDtoIds) {
+        return childRepository.findAllById(childDtoIds);
+    }
+
+    public Mono<ChildDocument> save(ChildDocument childDocument) {
+        return childRepository.save(childDocument);
     }
 }

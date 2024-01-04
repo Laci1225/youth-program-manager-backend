@@ -2,7 +2,6 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.*;
-import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +18,11 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ParentController {
 
-    private final ParentService parentService;
     private final ChildParentFacade childParentFacade;
 
     @QueryMapping("getAllParents")
-    public Flux<ParentDto> getAllParents() {
-        return parentService.getAllParents()
+    public Flux<ParentUpdateDto> getAllParents() {
+        return childParentFacade.getAllParents()
                 .doOnComplete(() -> log.info("All parents fetched successfully"));
     }
 

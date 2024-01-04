@@ -19,16 +19,6 @@ public class ParentService {
     private final ParentMapper parentMapper;
     private final ParentRepository parentRepository;
 
-    public Flux<ParentDto> getAllParents() {
-        return parentRepository.findAll()
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public Mono<ParentDto> getParentById(String id) {
-        return parentRepository.findById(id)
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
     public Mono<ParentDto> validateParent(ParentDto parentDto) {
         List<String> phoneNumbers = parentDto.getPhoneNumbers();
         if (phoneNumbers == null || phoneNumbers.isEmpty()) {
@@ -69,5 +59,9 @@ public class ParentService {
 
     public Mono<ParentDocument> save(ParentDocument parentDocument) {
         return parentRepository.save(parentDocument);
+    }
+
+    public Flux<ParentDocument> findAll() {
+        return parentRepository.findAll();
     }
 }

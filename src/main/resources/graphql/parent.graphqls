@@ -13,6 +13,14 @@ type ParentWithChildren{
     address: String
     childDtos: [Child]
 }
+type ParentWithChildrenIds{
+    id: ID!
+    familyName: String!
+    givenName: String!
+    phoneNumbers:[String!]!
+    address: String
+    childIds: [String]
+}
 
 type ParentWithEmergencyContact{
     parentDto : Parent
@@ -35,7 +43,7 @@ input ParentUpdateDtoInput{
 }
 
 extend type Query {
-    getAllParents: [Parent!]!
+    getAllParents: [ParentWithChildrenIds!]!
     getParentById(id: String!): ParentWithChildren!
     getPotentialChildren(name: String!): [Child]
 }

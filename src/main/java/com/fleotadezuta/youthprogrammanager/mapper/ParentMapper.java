@@ -11,6 +11,8 @@ import org.mapstruct.Mapper;
 public interface ParentMapper {
     ParentDto fromParentDocumentToParentDto(ParentDocument parent);
 
+    ParentUpdateDto fromParentDocumentToParentUpdateDto(ParentDocument parent);
+
     ParentDocument fromParentDtoToParentDocument(ParentDto parentDto);
 
     ParentWithChildrenDto fromParentDocumentToParentWithChildrenDto(ParentDocument parent);

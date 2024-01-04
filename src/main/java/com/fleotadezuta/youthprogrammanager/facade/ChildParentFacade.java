@@ -39,6 +39,21 @@ public class ChildParentFacade {
         return childService.findByFullName(name);
     }
 
+    public Flux<ParentUpdateDto> getAllParents() {
+        return parentService.findAll()
+                .flatMap(parent ->
+                        childService.findByParentId(parent.getId())
+                                .map(ChildDocument::getId)
+                                .collectList()
+                                .map(childIds -> {
+                                    ParentUpdateDto parentUpdateDto = parentMapper.fromParentDocumentToParentUpdateDto(parent);
+                                    parentUpdateDto.setChildIds(childIds);
+                                    return parentUpdateDto;
+                                })
+                );
+    }
+
+
     public Mono<ChildDto> addChild(ChildDto childDto) {
         List<RelativeParents> relativeParents = childDto.getRelativeParents();
         if (relativeParents == null || relativeParents.isEmpty()) {

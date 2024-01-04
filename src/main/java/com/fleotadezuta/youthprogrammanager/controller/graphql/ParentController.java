@@ -1,10 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
-import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.model.ParentCreateDto;
-import com.fleotadezuta.youthprogrammanager.model.ParentDto;
-import com.fleotadezuta.youthprogrammanager.model.ParentWithChildrenDto;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -43,11 +40,11 @@ public class ParentController {
                 .doOnSuccess(parentDto -> log.info("Added Parent with data: " + parentDto));
     }
 
-    /*@MutationMapping("updateParent")
-    public Mono<ParentDto> updateParent(@Argument String id, @Valid @RequestBody @Argument ParentDto parent) {
-        return parentService.updateParent(id, parent)
-                .doOnSuccess(parentDto -> log.info("Updated Parent with ID: " + id));
-    }*/
+    @MutationMapping("updateParent")
+    public Mono<ParentDto> updateParent(@Valid @RequestBody @Argument ParentUpdateDto parent) {
+        return childParentFacade.updateParent(parent)
+                .doOnSuccess(parentDto -> log.info("Updated Parent: " + parentDto));
+    }
 
     @MutationMapping("deleteParent")
     public Mono<ParentDto> deleteParent(@Argument String id) {

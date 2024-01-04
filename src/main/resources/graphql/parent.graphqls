@@ -5,16 +5,6 @@ type Parent {
     phoneNumbers:[String!]!
     address: String
 }
-
-type CreateParent {
-    id: ID!
-    familyName: String!
-    givenName: String!
-    phoneNumbers:[String!]!
-    address: String
-    childId: String
-
-}
 type ParentWithChildren{
     id: ID!
     familyName: String!
@@ -28,12 +18,20 @@ type ParentWithEmergencyContact{
     parentDto : Parent
     isEmergencyContact: Boolean
 }
-input ParentInput {
+input ParentCreateDtoInput {
     familyName: String!
     givenName: String!
     phoneNumbers:[String!]!
     address: String
     childId: String
+}
+input ParentUpdateDtoInput{
+    id: ID!
+    familyName: String!
+    givenName: String!
+    phoneNumbers:[String!]!
+    address: String
+    childIds: [String]
 }
 
 extend type Query {
@@ -42,7 +40,7 @@ extend type Query {
     getPotentialChildren(name: String!): [Child]
 }
 extend type Mutation{
-    addParent(parent: ParentInput!): Parent!
-    updateParent(id: String!, parent: ParentInput!): Parent!
+    addParent(parent: ParentCreateDtoInput!): Parent!
+    updateParent(parent: ParentUpdateDtoInput!): Parent!
     deleteParent(id: String!): Parent!
 }

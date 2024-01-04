@@ -65,11 +65,12 @@ public class ChildService {
         return childRepository.findById(id);
     }
 
-    public Flux<ChildDocument> findAllByIds(List<String> childDtoIds) {
-        return childRepository.findAllById(childDtoIds);
-    }
 
     public Mono<ChildDocument> save(ChildDocument childDocument) {
         return childRepository.save(childDocument);
+    }
+
+    public Flux<ChildDocument> findAllById(List<String> childIds) {
+        return childRepository.findAllById(childIds);
     }
 }

@@ -16,6 +16,6 @@ public class ParentUpdateDto {
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;
-    private List<String> childDtoIds;
+    private List<String> childIds;
     private String address;
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -131,18 +132,14 @@ public class ChildParentFacade {
 
     public Mono<ParentDto> addParent(ParentCreateDto parentCreateDto) {
         var parentDto = parentMapper.fromParentCreateDtoToParentDto(parentCreateDto);
-        log.info("a" + parentDto);
-
         return parentService.validateParent(parentDto)
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parentService::save)
                 .flatMap(validatedParent -> childService.findById(parentCreateDto.getChildId())
                         .flatMap(childDocument -> {
-                            log.info("a" + childDocument);
                             var relativeParents = childDocument.getRelativeParents();
                             relativeParents.add(new RelativeParents(validatedParent.getId(), true));
                             childDocument.setRelativeParents(relativeParents);
-                            log.info("b" + childDocument);
                             return childService.save(childDocument)
                                     .thenReturn(validatedParent);
                         })
@@ -151,19 +148,31 @@ public class ChildParentFacade {
     }
 
 
-
-
-    /*public Mono<ParentDto> updateParent(String id, ParentUpdateDto parentUpdateDto) {
+    public Mono<ParentDto> updateParent(ParentUpdateDto parentUpdateDto) {
         var parentDto = parentMapper.fromParentUpdateDtoToParentDto(parentUpdateDto);
         return Mono.just(parentDto)
                 .flatMap(parentService::validateParent)
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parentDoc -> {
-                    parentDoc.setId(id);
-                    return parentService.save(parentDoc);
+                    parentDoc.setId(parentDto.getId());
+                    List<String> childIds = parentUpdateDto.getChildIds();
+                    return childService.findAllById(childIds)
+                            .flatMap(child -> {
+                                List<RelativeParents> childRelativeParents = child.getRelativeParents();
+                                if (childRelativeParents == null) {
+                                    childRelativeParents = new ArrayList<>();
+                                }
+                                if (childRelativeParents.stream().noneMatch(rp -> rp.getId().equals(parentDoc.getId()))) {
+                                    childRelativeParents.add(new RelativeParents(parentDoc.getId(), true));
+                                }
+                                child.setRelativeParents(childRelativeParents);
+                                return childService.save(child);
+                            })
+                            .collectList()
+                            .then(parentService.save(parentDoc));
                 })
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
-*/
+
 
 }

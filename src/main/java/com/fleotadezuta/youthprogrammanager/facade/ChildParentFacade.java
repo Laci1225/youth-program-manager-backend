@@ -150,15 +150,21 @@ public class ChildParentFacade {
         return parentService.validateParent(parentDto)
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parentService::save)
-                .flatMap(validatedParent -> childService.findById(parentCreateDto.getChildId())
-                        .flatMap(childDocument -> {
-                            var relativeParents = childDocument.getRelativeParents();
-                            relativeParents.add(new RelativeParents(validatedParent.getId(), true));
-                            childDocument.setRelativeParents(relativeParents);
-                            return childService.save(childDocument)
-                                    .thenReturn(validatedParent);
-                        })
-                )
+                .flatMap(validatedParent -> {
+                    String childId = parentCreateDto.getChildId();
+                    if (childId == null || childId.isEmpty()) {
+                        return Mono.just(validatedParent);
+                    } else {
+                        return childService.findById(childId)
+                                .flatMap(childDocument -> {
+                                    var relativeParents = childDocument.getRelativeParents();
+                                    relativeParents.add(new RelativeParents(validatedParent.getId(), true));
+                                    childDocument.setRelativeParents(relativeParents);
+                                    return childService.save(childDocument)
+                                            .thenReturn(validatedParent);
+                                });
+                    }
+                })
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 

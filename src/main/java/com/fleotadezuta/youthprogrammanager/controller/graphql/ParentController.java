@@ -1,7 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
-import com.fleotadezuta.youthprogrammanager.model.ParentDto;
-import com.fleotadezuta.youthprogrammanager.service.ParentService;
+import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,36 +18,41 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ParentController {
 
-    private final ParentService parentService;
+    private final ChildParentFacade childParentFacade;
 
     @QueryMapping("getAllParents")
-    public Flux<ParentDto> getAllParents() {
-        return parentService.getAllParents()
+    public Flux<ParentUpdateDto> getAllParents() {
+        return childParentFacade.getAllParents()
                 .doOnComplete(() -> log.info("All parents fetched successfully"));
     }
 
     @QueryMapping("getParentById")
-    public Mono<ParentDto> getParentById(@Argument String id) {
-        return parentService.getParentById(id)
+    public Mono<ParentWithChildrenDto> getParentById(@Argument String id) {
+        return childParentFacade.getParentById(id)
                 .doOnSuccess(parentDto -> log.info("Retrieved Parent by ID: " + id));
     }
 
     @MutationMapping("addParent")
-    public Mono<ParentDto> addParent(@Valid @RequestBody @Argument ParentDto parent) {
-        return parentService.addParent(parent)
+    public Mono<ParentDto> addParent(@Valid @RequestBody @Argument ParentCreateDto parent) {
+        return childParentFacade.addParent(parent)
                 .doOnSuccess(parentDto -> log.info("Added Parent with data: " + parentDto));
     }
 
     @MutationMapping("updateParent")
-    public Mono<ParentDto> updateParent(@Argument String id, @Valid @RequestBody @Argument ParentDto parent) {
-        return parentService.updateParent(id, parent)
-                .doOnSuccess(parentDto -> log.info("Updated Parent with ID: " + id));
+    public Mono<ParentDto> updateParent(@Valid @RequestBody @Argument ParentUpdateDto parent) {
+        return childParentFacade.updateParent(parent)
+                .doOnSuccess(parentDto -> log.info("Updated Parent: " + parentDto));
     }
 
     @MutationMapping("deleteParent")
     public Mono<ParentDto> deleteParent(@Argument String id) {
-        return parentService.deleteParent(id)
+        return childParentFacade.deleteParent(id)
                 .doOnSuccess(deletedParent -> log.info("Deleted Parent with ID: " + deletedParent.getId()));
     }
 
+    @QueryMapping("getPotentialChildren")
+    public Flux<ChildDto> getPotentialParents(@Argument String name) {
+        return childParentFacade.getPotentialChildren(name)
+                .doOnNext(parent -> log.info("Child with name " + parent.getGivenName() + " " + parent.getFamilyName() + " fetched successfully"));
+    }
 }

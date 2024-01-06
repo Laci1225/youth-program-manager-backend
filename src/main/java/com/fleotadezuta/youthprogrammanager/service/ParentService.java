@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
+import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ParentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,48 +19,12 @@ public class ParentService {
     private final ParentMapper parentMapper;
     private final ParentRepository parentRepository;
 
-    public Flux<ParentDto> getAllParents() {
-        return parentRepository.findAll()
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public Mono<ParentDto> getParentById(String id) {
-        return parentRepository.findById(id)
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public Mono<ParentDto> addParent(ParentDto parentDto) {
-        return Mono.just(parentDto)
-                .flatMap(this::validateParent)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parentRepository::save)
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public Mono<ParentDto> deleteParent(String id) {
-        return parentRepository.findById(id)
-                .flatMap(parent -> parentRepository.deleteById(id)
-                        .then(Mono.just(parent)))
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    public Mono<ParentDto> updateParent(String id, ParentDto parentDto) {
-        return Mono.just(parentDto)
-                .flatMap(this::validateParent)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parentDoc -> {
-                    parentDoc.setId(id);
-                    return parentRepository.save(parentDoc);
-                })
-                .map(parentMapper::fromParentDocumentToParentDto);
-    }
-
-    private Mono<ParentDto> validateParent(ParentDto parentDto) {
+    public Mono<ParentDto> validateParent(ParentDto parentDto) {
         List<String> phoneNumbers = parentDto.getPhoneNumbers();
         if (phoneNumbers == null || phoneNumbers.isEmpty()) {
             return Mono.error(new IllegalArgumentException("Phone number list is empty"));
         }
-        
+
         PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
         return Flux.fromIterable(phoneNumbers)
                 .flatMap(phoneNumber -> Mono.fromCallable(() -> phoneNumberUtil.parse(phoneNumber, "XX")))
@@ -72,5 +37,31 @@ public class ParentService {
                         return Mono.error(new IllegalArgumentException("Some phone numbers are invalid"));
                     }
                 });
+    }
+
+    public Flux<ParentDto> findByFullName(String name) {
+        return parentRepository.findByFullName(name).map(parentMapper::fromParentDocumentToParentDto);
+    }
+
+    public Mono<ParentDocument> findById(String id) {
+        return parentRepository.findById(id);
+    }
+
+    public Mono<ParentDocument> deleteById(String id) {
+        return parentRepository.findById(id)
+                .flatMap(parentRepository.deleteById(id)::thenReturn);
+    }
+
+    public Flux<ParentDto> findAllById(List<String> parentIds) {
+        return parentRepository.findAllById(parentIds)
+                .map(parentMapper::fromParentDocumentToParentDto);
+    }
+
+    public Mono<ParentDocument> save(ParentDocument parentDocument) {
+        return parentRepository.save(parentDocument);
+    }
+
+    public Flux<ParentDocument> findAll() {
+        return parentRepository.findAll();
     }
 }

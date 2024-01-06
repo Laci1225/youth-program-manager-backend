@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class ChildDto {
+public class ChildUpdateDto {
     private String id;
     private String familyName;
     private String givenName;

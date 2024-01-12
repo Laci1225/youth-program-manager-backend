@@ -7,8 +7,11 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
+import com.fleotadezuta.youthprogrammanager.persistence.repository.TicketTypeRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
+import com.fleotadezuta.youthprogrammanager.service.TicketService;
+import com.fleotadezuta.youthprogrammanager.service.TicketTypeService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class ChildParentFacade {
     private final ParentMapper parentMapper;
     private final ParentService parentService;
     private final ChildService childService;
+    private final TicketTypeService ticketTypeService;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -34,6 +38,10 @@ public class ChildParentFacade {
 
     public Flux<ChildDto> getPotentialChildren(String name) {
         return childService.findByFullName(name);
+    }
+
+    public Flux<TicketTypeDto> getPotentialTicketTypes(String name) {
+        return ticketTypeService.findByName(name);
     }
 
     public Flux<ParentUpdateDto> getAllParents() {

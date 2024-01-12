@@ -54,13 +54,12 @@ public class TicketChildTicketTypeFacade {
                 );
     }
 
-    public Mono<TicketDto> addTicket(TicketDto ticketDto) {
-        return Mono.just(ticketDto)
-                .map(ticketMapper::fromTicketDtoToTicketDocument)
+    public Mono<TicketDto> addTicket(TicketDocument ticketDocument) {//todo creationDto
+        return Mono.just(ticketDocument)
                 .flatMap(ticketService::save)
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDoc ->
+                        getChildAndTicketType(ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                                .flatMap(tuple -> mapToTicketDto(ticketDoc, tuple.getT1(), tuple.getT2()))
                 );
     }
 

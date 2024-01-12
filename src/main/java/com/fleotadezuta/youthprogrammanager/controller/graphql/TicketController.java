@@ -4,6 +4,7 @@ import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.facade.TicketChildTicketTypeFacade;
 import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
+import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class TicketController {
     }
 
     @MutationMapping("addTicket")
-    public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketDto ticket) {
+    public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketDocument ticket) {
         return ticketChildTicketTypeFacade.addTicket(ticket)
                 .doOnSuccess(ticketDto -> log.info("Added Ticket type with data: " + ticketDto));
     }

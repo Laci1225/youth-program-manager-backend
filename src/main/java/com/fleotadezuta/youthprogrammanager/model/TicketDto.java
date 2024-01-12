@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @Document(collection = "ticket")
 public class TicketDto {
     private String id;
-    private String childId;
-    private String ticketTypeId;
+    private ChildDto child;
+    private TicketTypeDto ticketType;
     private LocalDateTime issueDate;
     private LocalDateTime expirationDate;
     private Integer price;

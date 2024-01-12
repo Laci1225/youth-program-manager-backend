@@ -1,9 +1,9 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
+import com.fleotadezuta.youthprogrammanager.facade.TicketChildTicketTypeFacade;
 import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
-import com.fleotadezuta.youthprogrammanager.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,37 +19,37 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 @Slf4j
 public class TicketController {
-    private final TicketService ticketService;
+    private final TicketChildTicketTypeFacade ticketChildTicketTypeFacade;
     private final ChildParentFacade childParentFacade;
 
     @QueryMapping("getAllTickets")
     public Flux<TicketDto> getAllTickets() {
-        return ticketService.getAllTickets()
+        return ticketChildTicketTypeFacade.getAllTickets()
                 .doOnNext(ticketDto -> log.info(ticketDto.toString()));
         //.doOnComplete(() -> log.info("All ticket types fetched successfully"));
     }
 
     @QueryMapping("getTicketById")
     public Mono<TicketDto> getTicketById(@Argument String id) {
-        return ticketService.getTicketById(id)
+        return ticketChildTicketTypeFacade.getTicketById(id)
                 .doOnSuccess(ticketDto -> log.info("Retrieved Ticket type by ID: " + id));
     }
 
     @MutationMapping("addTicket")
     public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketDto ticket) {
-        return ticketService.addTicket(ticket)
+        return ticketChildTicketTypeFacade.addTicket(ticket)
                 .doOnSuccess(ticketDto -> log.info("Added Ticket type with data: " + ticketDto));
     }
 
     @MutationMapping("updateTicket")
     public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketDto ticket) {
-        return ticketService.updateTicket(id, ticket)
+        return ticketChildTicketTypeFacade.updateTicket(id, ticket)
                 .doOnSuccess(ticketDto -> log.info("Updated Ticket type with ID: " + id));
     }
 
     @MutationMapping("deletedTicket")
     public Mono<TicketDto> deletedTicket(@Argument String id) {
-        return ticketService.deletedTicket(id)
+        return ticketChildTicketTypeFacade.deletedTicket(id)
                 .doOnSuccess(deletedTicket -> log.info("Deleted Ticket type with ID: " + deletedTicket.getId()));
     }
 

@@ -43,7 +43,7 @@ public class TicketController {
     }
 
     @MutationMapping("updateTicket")
-    public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketDto ticket) {
+    public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketDocument ticket) {
         return ticketChildTicketTypeFacade.updateTicket(id, ticket)
                 .doOnSuccess(ticketDto -> log.info("Updated Ticket type with ID: " + id));
     }

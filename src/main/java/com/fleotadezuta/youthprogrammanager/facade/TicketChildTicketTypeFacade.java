@@ -11,6 +11,7 @@ import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.TicketService;
 import com.fleotadezuta.youthprogrammanager.service.TicketTypeService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,6 +19,7 @@ import reactor.util.function.Tuple2;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class TicketChildTicketTypeFacade {
 
     private final TicketService ticketService;
@@ -72,16 +74,15 @@ public class TicketChildTicketTypeFacade {
                 );
     }
 
-    public Mono<TicketDto> updateTicket(String id, TicketDto ticketDto) {
-        return Mono.just(ticketDto)
-                .map(ticketMapper::fromTicketDtoToTicketDocument)
+    public Mono<TicketDto> updateTicket(String id, TicketDocument ticketDocument) {//todo TicketUpdateDto
+        return Mono.just(ticketDocument)
                 .flatMap(ticketDoc -> {
                     ticketDoc.setId(id);
                     return ticketService.save(ticketDoc);
                 })
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDoc ->
+                        getChildAndTicketType(ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                                .flatMap(tuple -> mapToTicketDto(ticketDoc, tuple.getT1(), tuple.getT2()))
                 );
     }
 }

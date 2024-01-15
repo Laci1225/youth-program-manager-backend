@@ -2,8 +2,10 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.facade.TicketChildTicketTypeFacade;
+import com.fleotadezuta.youthprogrammanager.model.TicketCreationDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
+import com.fleotadezuta.youthprogrammanager.model.TicketUpdateDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -37,13 +39,13 @@ public class TicketController {
     }
 
     @MutationMapping("addTicket")
-    public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketDocument ticket) {
+    public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketCreationDto ticket) {
         return ticketChildTicketTypeFacade.addTicket(ticket)
                 .doOnSuccess(ticketDto -> log.info("Added Ticket type with data: " + ticketDto));
     }
 
     @MutationMapping("updateTicket")
-    public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketDocument ticket) {
+    public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketUpdateDto ticket) {
         return ticketChildTicketTypeFacade.updateTicket(id, ticket)
                 .doOnSuccess(ticketDto -> log.info("Updated Ticket type with ID: " + id));
     }
@@ -56,7 +58,7 @@ public class TicketController {
 
     @QueryMapping("getPotentialTicketTypes")
     public Flux<TicketTypeDto> getPotentialTicketTypes(@Argument String name) {
-        return childParentFacade.getPotentialTicketTypes(name)
+        return ticketChildTicketTypeFacade.getPotentialTicketTypes(name)
                 .doOnNext(ticket -> log.info("Ticket type with name " + ticket.getName() + " fetched successfully"));
     }
 

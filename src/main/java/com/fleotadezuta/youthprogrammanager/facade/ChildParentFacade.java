@@ -40,10 +40,6 @@ public class ChildParentFacade {
         return childService.findByFullName(name);
     }
 
-    public Flux<TicketTypeDto> getPotentialTicketTypes(String name) {
-        return ticketTypeService.findByName(name);
-    }
-
     public Flux<ParentUpdateDto> getAllParents() {
         return parentService.findAll()
                 .flatMap(parent ->

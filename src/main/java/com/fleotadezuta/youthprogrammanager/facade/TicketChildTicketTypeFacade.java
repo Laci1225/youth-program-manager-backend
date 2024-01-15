@@ -3,9 +3,7 @@ package com.fleotadezuta.youthprogrammanager.facade;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketTypeMapper;
-import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.TicketService;
@@ -29,6 +27,10 @@ public class TicketChildTicketTypeFacade {
     private final ChildService childService;
     private final ChildMapper childMapper;
 
+    public Flux<TicketTypeDto> getPotentialTicketTypes(String name) {
+        return ticketTypeService.findByName(name);
+    }
+    
     private Mono<Tuple2<ChildDto, TicketTypeDto>> getChildAndTicketType(String childId, String ticketTypeId) {
         return Mono.zip(
                 childService.findById(childId).map(childMapper::fromChildDocumentToChildDto),
@@ -56,12 +58,13 @@ public class TicketChildTicketTypeFacade {
                 );
     }
 
-    public Mono<TicketDto> addTicket(TicketDocument ticketDocument) {//todo creationDto
-        return Mono.just(ticketDocument)
+    public Mono<TicketDto> addTicket(TicketCreationDto ticketCreationDto) {
+        return Mono.just(ticketCreationDto)
+                .map(ticketMapper::fromTicketCreationDtoToTicketDocument)
                 .flatMap(ticketService::save)
-                .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDoc, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDocument ->
+                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
+                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
                 );
     }
 
@@ -74,8 +77,9 @@ public class TicketChildTicketTypeFacade {
                 );
     }
 
-    public Mono<TicketDto> updateTicket(String id, TicketDocument ticketDocument) {//todo TicketUpdateDto
-        return Mono.just(ticketDocument)
+    public Mono<TicketDto> updateTicket(String id, TicketUpdateDto ticketUpdateDto) {
+        return Mono.just(ticketUpdateDto)
+                .map(ticketMapper::fromTicketUpdateDtoToTicketDocument)
                 .flatMap(ticketDoc -> {
                     ticketDoc.setId(id);
                     return ticketService.save(ticketDoc);

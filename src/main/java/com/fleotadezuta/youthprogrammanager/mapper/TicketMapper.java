@@ -1,8 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.mapper;
 
-import com.fleotadezuta.youthprogrammanager.model.ChildDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import org.mapstruct.*;
 
@@ -30,4 +28,12 @@ public interface TicketMapper {
     @Mapping(target = "childId", source = "ticketDto.child.id")
     @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
     TicketDocument fromTicketDtoToTicketDocument(TicketDto ticketDto);
+
+    @Mapping(target = "childId", source = "ticketDto.child.id")
+    @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
+    TicketDocument fromTicketUpdateDtoToTicketDocument(TicketUpdateDto ticketUpdateDto);
+
+    @Mapping(target = "childId", source = "ticketDto.child.id")
+    @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
+    TicketDocument fromTicketCreationDtoToTicketDocument(TicketCreationDto ticketCreationDto);
 }

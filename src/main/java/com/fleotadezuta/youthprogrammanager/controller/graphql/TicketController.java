@@ -6,7 +6,6 @@ import com.fleotadezuta.youthprogrammanager.model.TicketCreationDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketUpdateDto;
-import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

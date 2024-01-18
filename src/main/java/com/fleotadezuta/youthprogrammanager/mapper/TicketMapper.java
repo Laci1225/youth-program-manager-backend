@@ -29,11 +29,7 @@ public interface TicketMapper {
     @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
     TicketDocument fromTicketDtoToTicketDocument(TicketDto ticketDto);
 
-    @Mapping(target = "childId", source = "ticketDto.child.id")
-    @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
     TicketDocument fromTicketUpdateDtoToTicketDocument(TicketUpdateDto ticketUpdateDto);
 
-    @Mapping(target = "childId", source = "ticketDto.child.id")
-    @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
     TicketDocument fromTicketCreationDtoToTicketDocument(TicketCreationDto ticketCreationDto);
 }

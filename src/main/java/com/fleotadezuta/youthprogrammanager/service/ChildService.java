@@ -53,6 +53,15 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildUpdateDto);
     }
 
+    public Mono<Void> removeParentFromChildren(String parentIdToRemove) {
+        return findByParentId(parentIdToRemove)
+                .flatMap(child -> {
+                    child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
+                    return updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
+                }).then(); //to return Mono<Void>
+    }
+
+
     public Flux<ChildDto> findByFullName(String name) {
         return childRepository.findByFullName(name).map(childMapper::fromChildDocumentToChildDto);
     }

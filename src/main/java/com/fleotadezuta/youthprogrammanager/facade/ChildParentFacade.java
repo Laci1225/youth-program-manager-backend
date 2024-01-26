@@ -64,31 +64,19 @@ public class ChildParentFacade {
                 .collect(Collectors.toList());
 
         return Flux.merge(parentMonos)
-                .collectList()
-                .flatMap(parents -> {
-                    ChildDocument childDocument = childMapper.fromChildDtoToChildDocument(childDto);
-                    return childRepository.save(childDocument)
-                            .map(childMapper::fromChildDocumentToChildDto);
-                })
+                .then(childRepository.save(childMapper.fromChildDtoToChildDocument(childDto)))
+                .map(childMapper::fromChildDocumentToChildDto)
                 .onErrorResume(Mono::error);
     }
 
     public Mono<ParentDto> deleteParent(String id) {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
-                        .then(updateChildren(parent.getId()))
+                        .then(childService.removeParentFromChildren(parent.getId()))
                         .thenReturn(parent))
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    private Mono<Void> updateChildren(String parentIdToRemove) {
-        return childService.findByParentId(parentIdToRemove)
-                .flatMap(child -> {
-                    child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
-                    return childService.updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
-                })
-                .then();
-    }
 
     public Mono<ChildWithParentsDto> getChildById(String id) {
         return childRepository.findById(id)
@@ -99,7 +87,7 @@ public class ChildParentFacade {
                                     .toList())
                             .orElse(Collections.emptyList());
                     return parentService.findAllById(parentIds)
-                            .collectMap(ParentDto::getId, parent -> child.getRelativeParents()
+                            .collectMap(parentDto -> parentDto, parent -> child.getRelativeParents()
                                     .stream()
                                     .filter(rp -> rp.getId().equals(parent.getId()))
                                     .findFirst()
@@ -109,16 +97,11 @@ public class ChildParentFacade {
                             .flatMap(parentsEmergencyContactMap -> {
                                 ChildWithParentsDto childWithParentsDto = childMapper.fromChildDtoToChildWithParentsDocument(child);
                                 Mono<List<ParentWithContactDto>> parentsListMono = Flux.fromIterable(parentsEmergencyContactMap.entrySet())
-                                        .flatMap(entry -> {
-                                            String parentId = entry.getKey();
-                                            Boolean isEmergencyContact = entry.getValue();
-                                            return parentService.findById(parentId)
-                                                    .map(parentMapper::fromParentDocumentToParentDto)
-                                                    .map(parentDto -> ParentWithContactDto.builder()
-                                                            .parentDto(parentDto)
-                                                            .isEmergencyContact(isEmergencyContact)
-                                                            .build());
-                                        })
+                                        .flatMap(entry -> Mono.just(entry.getKey())
+                                                .map(parentDto -> ParentWithContactDto.builder()
+                                                        .parentDto(parentDto)
+                                                        .isEmergencyContact(entry.getValue())
+                                                        .build()))
                                         .collectList();
                                 return parentsListMono.map(parentsList -> {
                                     childWithParentsDto.setParents(parentsList);

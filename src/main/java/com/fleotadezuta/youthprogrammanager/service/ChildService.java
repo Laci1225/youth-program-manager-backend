@@ -4,7 +4,7 @@ import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
-import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class ChildService {
     public Mono<ChildUpdateDto> updateChild(ChildUpdateDto childUpdateDto) {
         List<String> parentIds = childUpdateDto.getRelativeParents()
                 .stream()
-                .map(RelativeParents::getId)
+                .map(RelativeParent::getId)
                 .toList();
         Set<String> uniqueParentIds = new HashSet<>(parentIds);
         if (parentIds.size() != uniqueParentIds.size()) {

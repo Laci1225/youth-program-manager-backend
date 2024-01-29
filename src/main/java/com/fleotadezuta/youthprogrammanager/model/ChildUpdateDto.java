@@ -1,13 +1,10 @@
-package com.fleotadezuta.youthprogrammanager.persistence.document;
+package com.fleotadezuta.youthprogrammanager.model;
 
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,9 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-@Document(collection = "children")
-public class ChildDocument {
-    @Id
+public class ChildUpdateDto {
     private String id;
     private String familyName;
     private String givenName;
@@ -26,12 +21,10 @@ public class ChildDocument {
     private String birthPlace;
     private String address;
     private List<RelativeParent> relativeParents;
-    private List<Disease> diagnosedDiseases;
-    private List<Medicine> regularMedicines;
-    @CreatedDate
+    private List<DiseaseDto> diagnosedDiseases;
+    private List<MedicineDto> regularMedicines;
+    private Boolean hasDiagnosedDiseases;
+    private Boolean hasRegularMedicines;
     private LocalDateTime createdDate;
-    @LastModifiedDate
     private LocalDateTime modifiedDate;
-
 }
-

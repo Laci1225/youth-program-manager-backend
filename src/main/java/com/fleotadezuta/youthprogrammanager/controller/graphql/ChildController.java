@@ -1,6 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
-import com.fleotadezuta.youthprogrammanager.model.ChildDto;
+import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 public class ChildController {
 
     private final ChildService childService;
+    private final ChildParentFacade childParentFacade;
 
     @QueryMapping("getAllChildren")
     public Flux<ChildDto> getAllChildren() {
@@ -28,21 +30,21 @@ public class ChildController {
     }
 
     @QueryMapping("getChildById")
-    public Mono<ChildDto> getChildById(@Argument String id) {
-        return childService.getChildById(id)
-                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + id));
+    public Mono<ChildWithParentsDto> getChildById(@Argument String id) {
+        return childParentFacade.getChildById(id)
+                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
     }
 
     @MutationMapping("addChild")
-    public Mono<ChildDto> addChild(@Valid @RequestBody @Argument ChildDto child) {
-        return childService.addChild(child)
+    public Mono<ChildDto> addChild(@Valid @RequestBody @Argument ChildCreateDto child) {
+        return childParentFacade.addChild(child)
                 .doOnSuccess(childDto -> log.info("Added Child with data: " + childDto));
     }
 
     @MutationMapping("updateChild")
-    public Mono<ChildDto> updateChild(@Argument String id, @Valid @RequestBody @Argument ChildDto child) {
-        return childService.updateChild(id, child)
-                .doOnSuccess(childDto -> log.info("Updated Child with ID: " + id));
+    public Mono<ChildUpdateDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
+        return childService.updateChild(child)
+                .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }
 
     @MutationMapping("deleteChild")
@@ -50,4 +52,11 @@ public class ChildController {
         return childService.deleteChild(id)
                 .doOnSuccess(deletedChild -> log.info("Deleted Child with ID: " + deletedChild.getId()));
     }
+
+    @QueryMapping("getPotentialParents")
+    public Flux<ParentDto> getPotentialParents(@Argument String name) {
+        return childParentFacade.getPotentialParents(name)
+                .doOnNext(parent -> log.info("Parent with name " + parent.getGivenName() + " " + parent.getFamilyName() + " fetched successfully"));
+    }
+
 }

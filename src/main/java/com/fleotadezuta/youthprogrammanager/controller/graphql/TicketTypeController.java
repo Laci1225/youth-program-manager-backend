@@ -23,7 +23,8 @@ public class TicketTypeController {
     @QueryMapping("getAllTicketTypes")
     public Flux<TicketTypeDto> getAllTicketTypes() {
         return ticketTypeService.getAllTicketTypes()
-                .doOnComplete(() -> log.info("All ticket types fetched successfully"));
+                .doOnNext(ticketTypeDto -> log.info(ticketTypeDto.getName()));
+        //.doOnComplete(() -> log.info("All ticket types fetched successfully"));
     }
 
     @QueryMapping("getTicketTypeById")

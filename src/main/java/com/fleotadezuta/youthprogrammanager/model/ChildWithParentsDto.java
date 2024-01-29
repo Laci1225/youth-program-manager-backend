@@ -1,6 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.model;
 
-import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,14 +12,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class ChildDto {
+public class ChildWithParentsDto {
     private String id;
     private String familyName;
     private String givenName;
     private LocalDateTime birthDate;
     private String birthPlace;
     private String address;
-    private List<RelativeParent> relativeParents;
+    private List<ParentWithContactDto> parents;
     private List<DiseaseDto> diagnosedDiseases;
     private List<MedicineDto> regularMedicines;
     private Boolean hasDiagnosedDiseases;

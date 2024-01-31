@@ -25,7 +25,7 @@ public class ChildDocument {
     private LocalDateTime birthDate;
     private String birthPlace;
     private String address;
-    private List<RelativeParents> relativeParents;
+    private List<RelativeParent> relativeParents;
     private List<Disease> diagnosedDiseases;
     private List<Medicine> regularMedicines;
     @CreatedDate

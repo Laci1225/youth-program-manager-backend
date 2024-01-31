@@ -1,11 +1,13 @@
 package com.fleotadezuta.youthprogrammanager.mapper;
 
+import com.fleotadezuta.youthprogrammanager.model.ChildCreateDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Disease;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Medicine;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -26,7 +28,12 @@ public interface ChildMapper {
         return regularMedicines != null && !regularMedicines.isEmpty();
     }
 
-    ChildDocument fromChildDtoToChildDocument(ChildDto childDto);
+    @Mapping(target = "relativeParents", source = "childCreateDto.relativeParent")
+    ChildDocument fromChildCreationDtoToChildDocument(ChildCreateDto childCreateDto);
+
+    default List<RelativeParent> relativeParents(RelativeParent relativeParent) {
+        return List.of(relativeParent);
+    }
 
     ChildDocument fromChildUpdateDtoToChildDocument(ChildUpdateDto childUpdateDto);
 

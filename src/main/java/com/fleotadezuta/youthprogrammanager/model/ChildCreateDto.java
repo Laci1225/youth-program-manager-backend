@@ -13,14 +13,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
-public class ChildDto {
+public class ChildCreateDto {
     private String id;
     private String familyName;
     private String givenName;
     private LocalDateTime birthDate;
     private String birthPlace;
     private String address;
-    private List<RelativeParent> relativeParents;
+    private RelativeParent relativeParent;
     private List<DiseaseDto> diagnosedDiseases;
     private List<MedicineDto> regularMedicines;
     private Boolean hasDiagnosedDiseases;

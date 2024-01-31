@@ -4,7 +4,7 @@ import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
-import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class ChildService {
     public Mono<ChildUpdateDto> updateChild(ChildUpdateDto childUpdateDto) {
         List<String> parentIds = childUpdateDto.getRelativeParents()
                 .stream()
-                .map(RelativeParents::getId)
+                .map(RelativeParent::getId)
                 .toList();
         Set<String> uniqueParentIds = new HashSet<>(parentIds);
         if (parentIds.size() != uniqueParentIds.size()) {
@@ -52,6 +52,15 @@ public class ChildService {
                 })
                 .map(childMapper::fromChildDocumentToChildUpdateDto);
     }
+
+    public Mono<Void> removeParentFromChildren(String parentIdToRemove) {
+        return findByParentId(parentIdToRemove)
+                .flatMap(child -> {
+                    child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
+                    return updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
+                }).then(); //to return Mono<Void>
+    }
+
 
     public Flux<ChildDto> findByFullName(String name) {
         return childRepository.findByFullName(name).map(childMapper::fromChildDocumentToChildDto);

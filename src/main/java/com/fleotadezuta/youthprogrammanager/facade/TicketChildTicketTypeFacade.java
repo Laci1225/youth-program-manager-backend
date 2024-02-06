@@ -30,31 +30,18 @@ public class TicketChildTicketTypeFacade {
     public Flux<TicketTypeDto> getPotentialTicketTypes(String name) {
         return ticketTypeService.findByName(name);
     }
-    
-    private Mono<Tuple2<ChildDto, TicketTypeDto>> getChildAndTicketType(String childId, String ticketTypeId) {
-        return Mono.zip(
-                childService.findById(childId).map(childMapper::fromChildDocumentToChildDto),
-                ticketTypeService.findById(ticketTypeId).map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto)
-        );
-    }
-
-    private Mono<TicketDto> mapToTicketDto(TicketDocument ticketDocument, ChildDto child, TicketTypeDto ticketType) {
-        return Mono.just(ticketMapper.fromTicketDocumentToTicketDto(ticketDocument, child, ticketType));
-    }
 
     public Flux<TicketDto> getAllTickets() {
         return ticketService.findAll()
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDoc ->
+                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
     public Mono<TicketDto> getTicketById(String id) {
         return ticketService.findById(id)
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDoc ->
+                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -62,18 +49,16 @@ public class TicketChildTicketTypeFacade {
         return Mono.just(ticketCreationDto)
                 .map(ticketMapper::fromTicketCreationDtoToTicketDocument)
                 .flatMap(ticketService::save)
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDoc ->
+                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
     public Mono<TicketDto> deletedTicket(String id) {
         return ticketService.findById(id)
                 .flatMap(ticket -> ticketService.deleteById(id).then(Mono.just(ticket)))
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticketDoc ->
+                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -85,8 +70,16 @@ public class TicketChildTicketTypeFacade {
                     return ticketService.save(ticketDoc);
                 })
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDoc, tuple.getT1(), tuple.getT2()))
+                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
+
+    private Mono<TicketDto> getChildAndTicketType(TicketDocument ticketDocument, String childId, String ticketTypeId) {
+        return Mono.zip(
+                childService.findById(childId).map(childMapper::fromChildDocumentToChildDto),
+                ticketTypeService.findById(ticketTypeId)
+        ).flatMap(tuple -> Mono.just(ticketMapper
+                .fromTicketDocumentToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2())));
+    }
+
 }

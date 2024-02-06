@@ -27,32 +27,31 @@ public class TicketController {
     @QueryMapping("getAllTickets")
     public Flux<TicketDto> getAllTickets() {
         return ticketChildTicketTypeFacade.getAllTickets()
-                .doOnNext(ticketDto -> log.info(ticketDto.toString()));
-        //.doOnComplete(() -> log.info("All ticket types fetched successfully"));
+                .doOnComplete(() -> log.info("All ticket fetched successfully"));
     }
 
     @QueryMapping("getTicketById")
     public Mono<TicketDto> getTicketById(@Argument String id) {
         return ticketChildTicketTypeFacade.getTicketById(id)
-                .doOnSuccess(ticketDto -> log.info("Retrieved Ticket type by ID: " + id));
+                .doOnSuccess(ticketDto -> log.info("Retrieved Ticket by ID: " + id));
     }
 
     @MutationMapping("addTicket")
     public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketCreationDto ticket) {
         return ticketChildTicketTypeFacade.addTicket(ticket)
-                .doOnSuccess(ticketDto -> log.info("Added Ticket type with data: " + ticketDto));
+                .doOnSuccess(ticketDto -> log.info("Added Ticket with data: " + ticketDto));
     }
 
     @MutationMapping("updateTicket")
     public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketUpdateDto ticket) {
         return ticketChildTicketTypeFacade.updateTicket(id, ticket)
-                .doOnSuccess(ticketDto -> log.info("Updated Ticket type with ID: " + id));
+                .doOnSuccess(ticketDto -> log.info("Updated Ticket with ID: " + id));
     }
 
     @MutationMapping("deletedTicket")
     public Mono<TicketDto> deletedTicket(@Argument String id) {
         return ticketChildTicketTypeFacade.deletedTicket(id)
-                .doOnSuccess(deletedTicket -> log.info("Deleted Ticket type with ID: " + deletedTicket.getId()));
+                .doOnSuccess(deletedTicket -> log.info("Deleted Ticket with ID: " + deletedTicket.getId()));
     }
 
     @QueryMapping("getPotentialTicketTypes")

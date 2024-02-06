@@ -30,7 +30,6 @@ public class ChildParentFacade {
     private final ParentMapper parentMapper;
     private final ParentService parentService;
     private final ChildService childService;
-    private final TicketTypeService ticketTypeService;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);

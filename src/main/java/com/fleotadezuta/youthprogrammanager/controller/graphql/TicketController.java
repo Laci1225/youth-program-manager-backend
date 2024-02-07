@@ -47,9 +47,9 @@ public class TicketController {
                 .doOnSuccess(ticketDto -> log.info("Updated Ticket with ID: " + id));
     }
 
-    @MutationMapping("deletedTicket")
-    public Mono<TicketDto> deletedTicket(@Argument String id) {
-        return ticketChildTicketTypeFacade.deletedTicket(id)
+    @MutationMapping("deleteTicket")
+    public Mono<TicketDto> deleteTicket(@Argument String id) {
+        return ticketChildTicketTypeFacade.deleteTicket(id)
                 .doOnSuccess(deletedTicket -> log.info("Deleted Ticket with ID: " + deletedTicket.getId()));
     }
 

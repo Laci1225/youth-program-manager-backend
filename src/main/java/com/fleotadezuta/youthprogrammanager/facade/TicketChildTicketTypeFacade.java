@@ -1,6 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
-import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
@@ -25,7 +24,6 @@ public class TicketChildTicketTypeFacade {
     private final TicketMapper ticketMapper;
     private final TicketTypeService ticketTypeService;
     private final ChildService childService;
-    private final ChildMapper childMapper;
 
     public Flux<TicketTypeDto> getPotentialTicketTypes(String name) {
         return ticketTypeService.findByName(name);
@@ -33,6 +31,7 @@ public class TicketChildTicketTypeFacade {
 
     public Flux<TicketDto> getAllTickets() {
         return ticketService.findAll()
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
@@ -40,6 +39,7 @@ public class TicketChildTicketTypeFacade {
 
     public Mono<TicketDto> getTicketById(String id) {
         return ticketService.findById(id)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
@@ -53,14 +53,17 @@ public class TicketChildTicketTypeFacade {
                     return ticketDocument;
                 })
                 .flatMap(ticketService::save)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
-    public Mono<TicketDto> deletedTicket(String id) {
+    public Mono<TicketDto> deleteTicket(String id) {
         return ticketService.findById(id)
-                .flatMap(ticket -> ticketService.deleteById(id).then(Mono.just(ticket)))
+                .flatMap(ticket -> ticketService.deleteById(id)
+                        .then(Mono.just(ticket)
+                                .map(ticketMapper::fromTicketDtoToTicketDocument)))
                 .flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
@@ -74,7 +77,8 @@ public class TicketChildTicketTypeFacade {
                 )
                 .flatMap(ticketDoc -> {
                     ticketDoc.setId(id);
-                    return ticketService.save(ticketDoc);
+                    return ticketService.save(ticketDoc)
+                            .map(ticketMapper::fromTicketDtoToTicketDocument);
                 })
                 .flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
@@ -84,9 +88,11 @@ public class TicketChildTicketTypeFacade {
 
     public Mono<TicketDto> reportParticipation(String id, HistoryData historyData) {
         return ticketService.findById(id)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDocument -> {
                     ticketDocument.getHistoryLog().add(historyData);
-                    return ticketService.save(ticketDocument);
+                    return ticketService.save(ticketDocument)
+                            .map(ticketMapper::fromTicketDtoToTicketDocument);
                 }).flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
@@ -94,9 +100,11 @@ public class TicketChildTicketTypeFacade {
 
     public Mono<TicketDto> removeParticipation(String id, HistoryData historyData) {
         return ticketService.findById(id)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDocument -> {
                     ticketDocument.getHistoryLog().remove(historyData);
-                    return ticketService.save(ticketDocument);
+                    return ticketService.save(ticketDocument)
+                            .map(ticketMapper::fromTicketDtoToTicketDocument);
                 }).flatMap(ticketDoc ->
                         getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
@@ -104,7 +112,7 @@ public class TicketChildTicketTypeFacade {
 
     private Mono<TicketDto> getChildAndTicketType(TicketDocument ticketDocument, String childId, String ticketTypeId) {
         return Mono.zip(
-                childService.findById(childId).map(childMapper::fromChildDocumentToChildDto),
+                childService.findById(childId),
                 ticketTypeService.findById(ticketTypeId)
         ).flatMap(tuple -> Mono.just(ticketMapper
                 .fromTicketDocumentToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2())));

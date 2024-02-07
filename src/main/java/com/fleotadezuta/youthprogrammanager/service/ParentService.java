@@ -43,13 +43,15 @@ public class ParentService {
         return parentRepository.findByFullName(name).map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Mono<ParentDocument> findById(String id) {
-        return parentRepository.findById(id);
+    public Mono<ParentDto> findById(String id) {
+        return parentRepository.findById(id)
+                .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Mono<ParentDocument> deleteById(String id) {
+    public Mono<ParentDto> deleteById(String id) {
         return parentRepository.findById(id)
-                .flatMap(parentRepository.deleteById(id)::thenReturn);
+                .flatMap(parentRepository.deleteById(id)::thenReturn)
+                .map(parentMapper::fromParentDocumentToParentDto);
     }
 
     public Flux<ParentDto> findAllById(List<String> parentIds) {
@@ -57,11 +59,13 @@ public class ParentService {
                 .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Mono<ParentDocument> save(ParentDocument parentDocument) {
-        return parentRepository.save(parentDocument);
+    public Mono<ParentDto> save(ParentDocument parentDocument) {
+        return parentRepository.save(parentDocument)
+                .map(parentMapper::fromParentDocumentToParentDto);
     }
 
-    public Flux<ParentDocument> findAll() {
-        return parentRepository.findAll();
+    public Flux<ParentDto> findAll() {
+        return parentRepository.findAll()
+                .map(parentMapper::fromParentDocumentToParentDto);
     }
 }

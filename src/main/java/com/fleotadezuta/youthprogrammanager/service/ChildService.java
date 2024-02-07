@@ -55,6 +55,7 @@ public class ChildService {
 
     public Mono<Void> removeParentFromChildren(String parentIdToRemove) {
         return findByParentId(parentIdToRemove)
+                .map(childMapper::fromChildDtoToChildDocument)
                 .flatMap(child -> {
                     child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
                     return updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
@@ -66,20 +67,24 @@ public class ChildService {
         return childRepository.findByFullName(name).map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Flux<ChildDocument> findByParentId(String parentIdToRemove) {
-        return childRepository.findChildDocumentsByRelativeParents_Id(parentIdToRemove);
+    public Flux<ChildDto> findByParentId(String parentIdToRemove) {
+        return childRepository.findChildDocumentsByRelativeParents_Id(parentIdToRemove)
+                .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Mono<ChildDocument> findById(String id) {
-        return childRepository.findById(id);
+    public Mono<ChildDto> findById(String id) {
+        return childRepository.findById(id)
+                .map(childMapper::fromChildDocumentToChildDto);
     }
 
 
-    public Mono<ChildDocument> save(ChildDocument childDocument) {
-        return childRepository.save(childDocument);
+    public Mono<ChildDto> save(ChildDocument childDocument) {
+        return childRepository.save(childDocument)
+                .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Flux<ChildDocument> findAllById(List<String> childIds) {
-        return childRepository.findAllById(childIds);
+    public Flux<ChildDto> findAllById(List<String> childIds) {
+        return childRepository.findAllById(childIds)
+                .map(childMapper::fromChildDocumentToChildDto);
     }
 }

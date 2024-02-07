@@ -7,11 +7,8 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
-import com.fleotadezuta.youthprogrammanager.persistence.repository.TicketTypeRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
-import com.fleotadezuta.youthprogrammanager.service.TicketService;
-import com.fleotadezuta.youthprogrammanager.service.TicketTypeService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +16,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,8 +37,10 @@ public class ChildParentFacade {
 
     public Flux<ParentUpdateDto> getAllParents() {
         return parentService.findAll()
+                .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parent ->
                         childService.findByParentId(parent.getId())
+                                .map(childMapper::fromChildDtoToChildDocument)
                                 .map(ChildDocument::getId)
                                 .collectList()
                                 .map(childIds -> {
@@ -62,6 +60,7 @@ public class ChildParentFacade {
                     .map(childMapper::fromChildDocumentToChildDto);
         }
         Mono<ParentDocument> parentMono = parentService.findById(relativeParent.getId())
+                .map(parentMapper::fromParentDtoToParentDocument)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid parentId: " + relativeParent.getId())));
 
         return Flux.merge(parentMono)
@@ -74,8 +73,7 @@ public class ChildParentFacade {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
                         .then(childService.removeParentFromChildren(parent.getId()))
-                        .thenReturn(parent))
-                .map(parentMapper::fromParentDocumentToParentDto);
+                        .thenReturn(parent));
     }
 
 
@@ -114,13 +112,12 @@ public class ChildParentFacade {
 
     public Mono<ParentWithChildrenDto> getParentById(String id) {
         return parentService.findById(id)
+                .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parent -> childService.findByParentId(parent.getId())
                         .collectList()
                         .map(children -> {
                             var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
-                            List<ChildDto> childDtos = children.stream()
-                                    .map(childMapper::fromChildDocumentToChildDto)
-                                    .collect(Collectors.toList());
+                            List<ChildDto> childDtos = new ArrayList<>(children);
                             parentWithChildrenDto.setChildDtos(childDtos);
                             return parentWithChildrenDto;
                         }));
@@ -137,6 +134,7 @@ public class ChildParentFacade {
                         return Mono.just(validatedParent);
                     } else {
                         return childService.findById(childId)
+                                .map(childMapper::fromChildDtoToChildDocument)
                                 .flatMap(childDocument -> {
                                     var relativeParents = childDocument.getRelativeParents();
                                     relativeParents.add(new RelativeParent(validatedParent.getId(), true));
@@ -145,8 +143,7 @@ public class ChildParentFacade {
                                             .thenReturn(validatedParent);
                                 });
                     }
-                })
-                .map(parentMapper::fromParentDocumentToParentDto);
+                });
     }
 
 
@@ -167,6 +164,7 @@ public class ChildParentFacade {
                                 combinedChildIds.addAll(previousChildIds);
 
                                 return childService.findAllById(combinedChildIds.stream().toList())
+                                        .map(childMapper::fromChildDtoToChildDocument)
                                         .flatMap(child -> {
                                             if (!childIds.contains(child.getId()) && previousChildIds.contains(child.getId())) {
                                                 List<RelativeParent> childRelativeParents = child.getRelativeParents();
@@ -188,8 +186,7 @@ public class ChildParentFacade {
                                         })
                                         .collectList()
                                         .then(parentService.save(parentDoc));
-                            })
-                            .map(parentMapper::fromParentDocumentToParentDto);
+                            });
                 });
     }
 }

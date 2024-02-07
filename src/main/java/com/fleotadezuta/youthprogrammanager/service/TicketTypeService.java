@@ -2,7 +2,6 @@ package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.TicketTypeMapper;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
-import com.fleotadezuta.youthprogrammanager.persistence.document.TicketTypeDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.TicketTypeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,7 @@ public class TicketTypeService {
     }
 
     public Flux<TicketTypeDto> findByName(String name) {
-        return ticketTypeRepository.findAllByName(name).map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
+        return ticketTypeRepository.findAllByNameContaining(name).map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
     public Mono<TicketTypeDto> findById(String id) {

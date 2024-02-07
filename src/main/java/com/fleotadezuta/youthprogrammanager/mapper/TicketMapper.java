@@ -1,8 +1,11 @@
 package com.fleotadezuta.youthprogrammanager.mapper;
 
 import com.fleotadezuta.youthprogrammanager.model.*;
+import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TicketMapper {
@@ -29,7 +32,16 @@ public interface TicketMapper {
     @Mapping(target = "ticketTypeId", source = "ticketDto.ticketType.id")
     TicketDocument fromTicketDtoToTicketDocument(TicketDto ticketDto);
 
-    TicketDocument fromTicketUpdateDtoToTicketDocument(TicketUpdateDto ticketUpdateDto);
+    @BeanMapping(builder = @Builder(disableBuilder = true))
+    @Mapping(target = "historyLog", ignore = true)
+    TicketDocument fromTicketUpdateDtoToTicketDocument(TicketUpdateDto ticketUpdateDto,
+                                                       @Context List<HistoryData> historyData);
+
+    @AfterMapping
+    default void fromTicketUpdateDtoToTicketDocument(@MappingTarget TicketDocument ticketDocument,
+                                                     @Context List<HistoryData> historyData) {
+        ticketDocument.setHistoryLog(historyData);
+    }
 
     TicketDocument fromTicketCreationDtoToTicketDocument(TicketCreationDto ticketCreationDto);
 }

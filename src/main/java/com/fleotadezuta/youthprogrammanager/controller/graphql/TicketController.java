@@ -1,11 +1,11 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
-import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.facade.TicketChildTicketTypeFacade;
 import com.fleotadezuta.youthprogrammanager.model.TicketCreationDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
 import com.fleotadezuta.youthprogrammanager.model.TicketUpdateDto;
+import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,6 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class TicketController {
     private final TicketChildTicketTypeFacade ticketChildTicketTypeFacade;
-    private final ChildParentFacade childParentFacade;
 
     @QueryMapping("getAllTickets")
     public Flux<TicketDto> getAllTickets() {
@@ -58,6 +57,19 @@ public class TicketController {
     public Flux<TicketTypeDto> getPotentialTicketTypes(@Argument String name) {
         return ticketChildTicketTypeFacade.getPotentialTicketTypes(name)
                 .doOnNext(ticket -> log.info("Ticket type with name " + ticket.getName() + " fetched successfully"));
+    }
+
+    @MutationMapping("reportParticipation")
+    public Mono<TicketDto> reportParticipation(@Argument String id, @Argument @RequestBody HistoryData historyData) {
+        return ticketChildTicketTypeFacade.reportParticipation(id, historyData)
+                .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
+    }
+
+    @MutationMapping("removeParticipation")
+    public Mono<TicketDto> removeParticipation(@Argument String id, @Argument @RequestBody HistoryData historyData) {
+        return ticketChildTicketTypeFacade.removeParticipation(id, historyData)
+                .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
+
     }
 
 }

@@ -48,4 +48,12 @@ public class TicketTypeService {
                 .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
+    public Flux<TicketTypeDto> findByName(String name) {
+        return ticketTypeRepository.findAllByNameContaining(name).map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
+    }
+
+    public Mono<TicketTypeDto> findById(String id) {
+        return ticketTypeRepository.findById(id)
+                .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
+    }
 }

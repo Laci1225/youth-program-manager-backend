@@ -20,6 +20,8 @@ public interface ChildMapper {
     @Mapping(target = "hasRegularMedicines", source = "childDocument.regularMedicines")
     ChildDto fromChildDocumentToChildDto(ChildDocument childDocument);
 
+    ChildDocument fromChildDtoToChildDocument(ChildDto childDto);
+
     default boolean hasDiagnosedDiseases(List<Disease> diagnosedDisease) {
         return diagnosedDisease != null && !diagnosedDisease.isEmpty();
     }

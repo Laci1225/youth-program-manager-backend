@@ -34,6 +34,6 @@ extend type Mutation{
     addTicket(ticket: TicketInput!): Ticket!
     updateTicket(id: String!, ticket: TicketInput!): Ticket!
     deleteTicket(id: String!): Ticket!
-    reportParticipation(id:String!,historyData: HistoryDataInput!): Ticket!
-    removeParticipation(id:String!,historyData: HistoryDataInput!): Ticket!
+    reportParticipation(id: String!, historyData: HistoryDataInput!): Ticket!
+    removeParticipation(id: String!, historyData: HistoryDataInput!): Ticket!
 }

@@ -33,7 +33,7 @@ public class TicketChildTicketTypeFacade {
         return ticketService.findAll()
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -41,7 +41,7 @@ public class TicketChildTicketTypeFacade {
         return ticketService.findById(id)
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -55,7 +55,7 @@ public class TicketChildTicketTypeFacade {
                 .flatMap(ticketService::save)
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -65,7 +65,7 @@ public class TicketChildTicketTypeFacade {
                         .then(Mono.just(ticket)
                                 .map(ticketMapper::fromTicketDtoToTicketDocument)))
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -81,7 +81,7 @@ public class TicketChildTicketTypeFacade {
                             .map(ticketMapper::fromTicketDtoToTicketDocument);
                 })
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -94,7 +94,7 @@ public class TicketChildTicketTypeFacade {
                     return ticketService.save(ticketDocument)
                             .map(ticketMapper::fromTicketDtoToTicketDocument);
                 }).flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
@@ -106,11 +106,11 @@ public class TicketChildTicketTypeFacade {
                     return ticketService.save(ticketDocument)
                             .map(ticketMapper::fromTicketDtoToTicketDocument);
                 }).flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
-    private Mono<TicketDto> getChildAndTicketType(TicketDocument ticketDocument, String childId, String ticketTypeId) {
+    private Mono<TicketDto> getTicketDtoWithChildAndTicketType(TicketDocument ticketDocument, String childId, String ticketTypeId) {
         return Mono.zip(
                 childService.findById(childId),
                 ticketTypeService.findById(ticketTypeId)

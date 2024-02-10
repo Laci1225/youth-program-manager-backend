@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @Builder
 @Document
-public class RelativeParents {
+public class RelativeParent {
     @Id
     private String id;
     private Boolean isEmergencyContact;

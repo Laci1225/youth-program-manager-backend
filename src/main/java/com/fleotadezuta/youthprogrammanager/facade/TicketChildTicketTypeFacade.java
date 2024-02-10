@@ -1,9 +1,8 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
-import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
-import com.fleotadezuta.youthprogrammanager.mapper.TicketTypeMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
+import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.TicketService;
@@ -13,7 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
+
+import java.util.ArrayList;
 
 @Service
 @AllArgsConstructor
@@ -23,70 +23,99 @@ public class TicketChildTicketTypeFacade {
     private final TicketService ticketService;
     private final TicketMapper ticketMapper;
     private final TicketTypeService ticketTypeService;
-    private final TicketTypeMapper ticketTypeMapper;
     private final ChildService childService;
-    private final ChildMapper childMapper;
 
     public Flux<TicketTypeDto> getPotentialTicketTypes(String name) {
         return ticketTypeService.findByName(name);
     }
-    
-    private Mono<Tuple2<ChildDto, TicketTypeDto>> getChildAndTicketType(String childId, String ticketTypeId) {
-        return Mono.zip(
-                childService.findById(childId).map(childMapper::fromChildDocumentToChildDto),
-                ticketTypeService.findById(ticketTypeId).map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto)
-        );
-    }
-
-    private Mono<TicketDto> mapToTicketDto(TicketDocument ticketDocument, ChildDto child, TicketTypeDto ticketType) {
-        return Mono.just(ticketMapper.fromTicketDocumentToTicketDto(ticketDocument, child, ticketType));
-    }
 
     public Flux<TicketDto> getAllTickets() {
         return ticketService.findAll()
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
+                .flatMap(ticketDoc ->
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
     public Mono<TicketDto> getTicketById(String id) {
         return ticketService.findById(id)
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
+                .flatMap(ticketDoc ->
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
     public Mono<TicketDto> addTicket(TicketCreationDto ticketCreationDto) {
         return Mono.just(ticketCreationDto)
                 .map(ticketMapper::fromTicketCreationDtoToTicketDocument)
+                .map(ticketDocument -> {
+                    ticketDocument.setHistoryLog(new ArrayList<>());
+                    return ticketDocument;
+                })
                 .flatMap(ticketService::save)
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
+                .flatMap(ticketDoc ->
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
-    public Mono<TicketDto> deletedTicket(String id) {
+    public Mono<TicketDto> deleteTicket(String id) {
         return ticketService.findById(id)
-                .flatMap(ticket -> ticketService.deleteById(id).then(Mono.just(ticket)))
-                .flatMap(ticketDocument ->
-                        getChildAndTicketType(ticketDocument.getChildId(), ticketDocument.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2()))
+                .flatMap(ticket -> ticketService.deleteById(id)
+                        .then(Mono.just(ticket)
+                                .map(ticketMapper::fromTicketDtoToTicketDocument)))
+                .flatMap(ticketDoc ->
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
 
     public Mono<TicketDto> updateTicket(String id, TicketUpdateDto ticketUpdateDto) {
-        return Mono.just(ticketUpdateDto)
-                .map(ticketMapper::fromTicketUpdateDtoToTicketDocument)
+        return ticketService.findById(id)
+                .map(ticketDocument -> ticketMapper
+                        .fromTicketUpdateDtoToTicketDocument(
+                                ticketUpdateDto, ticketDocument.getHistoryLog())
+                )
                 .flatMap(ticketDoc -> {
                     ticketDoc.setId(id);
-                    return ticketService.save(ticketDoc);
+                    return ticketService.save(ticketDoc)
+                            .map(ticketMapper::fromTicketDtoToTicketDocument);
                 })
                 .flatMap(ticketDoc ->
-                        getChildAndTicketType(ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
-                                .flatMap(tuple -> mapToTicketDto(ticketDoc, tuple.getT1(), tuple.getT2()))
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
                 );
     }
+
+
+    public Mono<TicketDto> reportParticipation(String id, HistoryData historyData) {
+        return ticketService.findById(id)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
+                .flatMap(ticketDocument -> {
+                    ticketDocument.getHistoryLog().add(historyData);
+                    return ticketService.save(ticketDocument)
+                            .map(ticketMapper::fromTicketDtoToTicketDocument);
+                }).flatMap(ticketDoc ->
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                );
+    }
+
+    public Mono<TicketDto> removeParticipation(String id, HistoryData historyData) {
+        return ticketService.findById(id)
+                .map(ticketMapper::fromTicketDtoToTicketDocument)
+                .flatMap(ticketDocument -> {
+                    ticketDocument.getHistoryLog().remove(historyData);
+                    return ticketService.save(ticketDocument)
+                            .map(ticketMapper::fromTicketDtoToTicketDocument);
+                }).flatMap(ticketDoc ->
+                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                );
+    }
+
+    private Mono<TicketDto> getTicketDtoWithChildAndTicketType(TicketDocument ticketDocument, String childId, String ticketTypeId) {
+        return Mono.zip(
+                childService.findById(childId),
+                ticketTypeService.findById(ticketTypeId)
+        ).flatMap(tuple -> Mono.just(ticketMapper
+                .fromTicketDocumentToTicketDto(ticketDocument, tuple.getT1(), tuple.getT2())));
+    }
+
 }

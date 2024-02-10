@@ -1,6 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
+import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.TicketRepository;
 import lombok.AllArgsConstructor;
@@ -15,16 +16,19 @@ public class TicketService {
     private final TicketRepository ticketRepository;
 
 
-    public Flux<TicketDocument> findAll() {
-        return ticketRepository.findAll();
+    public Flux<TicketDto> findAll() {
+        return ticketRepository.findAll()
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
-    public Mono<TicketDocument> findById(String id) {
-        return ticketRepository.findById(id);
+    public Mono<TicketDto> findById(String id) {
+        return ticketRepository.findById(id)
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
-    public Mono<TicketDocument> save(TicketDocument ticketDocument) {
-        return ticketRepository.save(ticketDocument);
+    public Mono<TicketDto> save(TicketDocument ticketDocument) {
+        return ticketRepository.save(ticketDocument)
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
     }
 
     public Mono<Void> deleteById(String id) {

@@ -1,6 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.model;
 
-import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParents;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

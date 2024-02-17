@@ -85,6 +85,11 @@
             <artifactId>libphonenumber</artifactId>
             <version>8.11.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>4.0.0-RC2</version>
+        </dependency>
 
         <dependency>
             <groupId>com.auth0</groupId>

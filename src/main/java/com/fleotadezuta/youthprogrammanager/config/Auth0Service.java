@@ -1,11 +1,13 @@
 package com.fleotadezuta.youthprogrammanager.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.tools.javac.Main;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,8 +22,14 @@ public class Auth0Service {
 
     private final RestTemplate restTemplate;
 
+    @Value("${management.audience}")
+    private static String API;
 
-    public Map<String, String> getUserInfo(String userId, String accessToken) {
+
+    public Map<String, String> getUserInfo(String userId) {
+
+        var accessToken = "";
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + accessToken);
 
@@ -33,15 +41,23 @@ public class Auth0Service {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String auth0ManagementApiUrl = properties.getProperty("okta.oauth2.audience").concat("users/");
-        ResponseEntity<Map> responseEntity = restTemplate.exchange(
+        String auth0ManagementApiUrl = properties.getProperty("management.audience").concat("users/");
+        var responseEntity = restTemplate.exchange(
                 auth0ManagementApiUrl + userId,
                 HttpMethod.GET,
                 entity,
                 Map.class,
                 userId
         );
-
-        return (Map<String, String>) responseEntity.getBody().get("app_metadata");
+        var responseBody = responseEntity.getBody();
+        if (responseBody != null) {
+            var appMetadata = responseEntity.getBody().get("app_metadata");
+            if (appMetadata != null) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                return objectMapper.convertValue(appMetadata, new TypeReference<Map<String, String>>() {
+                });
+            }
+        }
+        return Map.of();
     }
 }

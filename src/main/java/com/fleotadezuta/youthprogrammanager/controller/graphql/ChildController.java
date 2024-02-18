@@ -4,21 +4,17 @@ import com.fleotadezuta.youthprogrammanager.config.Auth0Service;
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
+import graphql.GraphQLContext;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.nio.file.AccessDeniedException;
 
 
 @Controller
@@ -28,24 +24,12 @@ public class ChildController {
 
     private final ChildService childService;
     private final ChildParentFacade childParentFacade;
-    private final Auth0Service auth0Service;
 
+    //todo @preAuthorize(hasAuthority('read:children'))
     @QueryMapping("getAllChildren")
-    public Flux<ChildDto> getAllChildren() throws AccessDeniedException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.error(authentication.toString());
-        if (authentication instanceof JwtAuthenticationToken jwtAuthenticationToken) {
-            String accessToken = jwtAuthenticationToken.getToken().getTokenValue();
-            log.error(accessToken);
-            var a = auth0Service.getUserInfo(authentication.getName(), accessToken);
-            //{appId=YOUR_APP_ID, role=ADMIN}
-            if (a.get("role").equals("ADMIN")) {
-                return childService.getAllChildren();
-            } else {
-                throw new AccessDeniedException("User doesn't have permission to read children");
-            }
-        }
-        return childService.getAllChildren();
+    public Flux<ChildDto> getAllChildren(GraphQLContext context) {
+        var userDetails = new UserDetails(context);
+        return childService.getAllChildren(userDetails);
     }
 
     @QueryMapping("getChildById")

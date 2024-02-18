@@ -2,39 +2,41 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.*;
-import com.sun.tools.javac.Main;
 import jakarta.validation.Valid;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 
 @Controller
-@AllArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class ParentController {
 
     private final ChildParentFacade childParentFacade;
 
+    @Value("${auth0.management.audience}")
+    private String audience;
+    @Value("${auth0.management.api.token}")
+    private String accessToken;
+
     @QueryMapping("getAllParents")
     public Flux<ParentUpdateDto> getAllParents() {
-        var accesstoken = "";
-        HttpResponse<String> response = Unirest.post("https://dev-wnuf5ensk4dnqucn.eu.auth0.com/api/v2/users/auth0%7C65b6462677cdcbbf47524ce6/roles")
+       /* var accesstoken = "";
+        HttpResponse<String> response = Unirest.post(audience+"users/auth0%7C65b6462677cdcbbf47524ce6/roles")
                 .header("content-type", "application/json")
                 .header("authorization", "Bearer " + accesstoken)
                 .header("cache-control", "no-cache")
@@ -45,7 +47,7 @@ public class ParentController {
         System.out.println("Response body: " + response.getBody());
         log.error(response.getHeaders().toString());
         log.error(response.getCookies().toString());
-        log.error(response.getBody());
+        log.error(response.getBody());*/
         return childParentFacade.getAllParents()
                 .doOnComplete(() -> log.info("All parents fetched successfully"));
     }
@@ -59,7 +61,33 @@ public class ParentController {
     @MutationMapping("addParent")
     public Mono<ParentDto> addParent(@Valid @RequestBody @Argument ParentCreateDto parent) {
         return childParentFacade.addParent(parent)
-                .doOnSuccess(parentDto -> log.info("Added Parent with data: " + parentDto));
+                .doOnSuccess(parentDto -> {
+                    log.info("Added Parent with data: " + parentDto);
+
+                    OkHttpClient client = new OkHttpClient().newBuilder()
+                            .build();
+                    MediaType mediaType = MediaType.parse("application/json");
+                    okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType,
+                            "{\"email\":\"user4@example.com\"," +
+                                    "\"connection\":\"Username-Password-Authentication\"," +
+                                    "\"app_metadata\":{\"app_user_id\":\"" + parentDto.getId() + "\", \"app_user_type\":\"PARENT\"}," +
+                                    "\"given_name\":\"" + parentDto.getGivenName() + "\"," +
+                                    "\"family_name\":\"" + parentDto.getFamilyName() + "\"," +
+                                    "\"password\":\"Example123!\"}");
+                    Request request = new Request.Builder()
+                            .url(audience + "users")
+                            .method("POST", body)
+                            .addHeader("Content-Type", "application/json")
+                            .addHeader("Accept", "application/json")
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .build();
+                    try {
+                        Response response = client.newCall(request).execute();
+                        log.error(response.body().string());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     @MutationMapping("updateParent")

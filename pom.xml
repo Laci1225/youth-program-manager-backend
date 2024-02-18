@@ -41,6 +41,10 @@
             <artifactId>graphql-java-kickstart</artifactId>
             <version>15.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

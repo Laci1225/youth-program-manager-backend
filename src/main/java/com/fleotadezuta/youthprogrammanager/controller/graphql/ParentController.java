@@ -68,11 +68,12 @@ public class ParentController {
                             .build();
                     MediaType mediaType = MediaType.parse("application/json");
                     okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType,
-                            "{\"email\":\"user4@example.com\"," +
+                            "{\"email\":\"user5@example.com\"," +
                                     "\"connection\":\"Username-Password-Authentication\"," +
                                     "\"app_metadata\":{\"app_user_id\":\"" + parentDto.getId() + "\", \"app_user_type\":\"PARENT\"}," +
                                     "\"given_name\":\"" + parentDto.getGivenName() + "\"," +
                                     "\"family_name\":\"" + parentDto.getFamilyName() + "\"," +
+                                    "\"user_id\":\"" + parentDto.getId() + "\"," +
                                     "\"password\":\"Example123!\"}");
                     Request request = new Request.Builder()
                             .url(audience + "users")
@@ -81,12 +82,24 @@ public class ParentController {
                             .addHeader("Accept", "application/json")
                             .addHeader("Authorization", "Bearer " + accessToken)
                             .build();
+                    okhttp3.RequestBody body2 = okhttp3.RequestBody.create(mediaType,
+                            "{\"users\":[\"auth0|" + parentDto.getId() + "\"]}");
+                    Request request2 = new Request.Builder()
+                            .url(audience + "roles/rol_Mjt9yu2PlPadWRn5/users")
+                            .method("POST", body2)
+                            .addHeader("Content-Type", "application/json")
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .build();
                     try {
                         Response response = client.newCall(request).execute();
+
+                        Response response2 = client.newCall(request2).execute();
                         log.error(response.body().string());
+                        log.error(response2.body().string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+
                 });
     }
 

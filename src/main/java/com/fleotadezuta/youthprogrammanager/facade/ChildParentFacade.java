@@ -77,7 +77,10 @@ public class ChildParentFacade {
     }
 
 
-    public Mono<ChildWithParentsDto> getChildById(String id) {
+    public Mono<ChildWithParentsDto> getChildById(UserDetails userDetails, String id) {
+        if (!userDetails.getUserType().equals("ADMIN")) {
+            return Mono.error(new IllegalArgumentException("User not authorized"));
+        }
         return childRepository.findById(id)
                 .flatMap(child -> {
                     List<String> parentIds = Optional.ofNullable(child.getRelativeParents())
@@ -85,6 +88,9 @@ public class ChildParentFacade {
                                     .map(RelativeParent::getId)
                                     .toList())
                             .orElse(Collections.emptyList());
+                    if (!parentIds.contains(userDetails.getUserId())) {
+                        return Mono.error(new IllegalArgumentException("User not authorized"));
+                    }
                     return parentService.findAllById(parentIds)
                             .collectMap(parentDto -> parentDto, parent -> child.getRelativeParents()
                                     .stream()

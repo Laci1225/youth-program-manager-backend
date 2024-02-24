@@ -11,10 +11,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+
+import static org.springframework.security.authorization.AuthorityReactiveAuthorizationManager.hasAuthority;
 
 
 @Controller
@@ -25,16 +33,24 @@ public class ChildController {
     private final ChildService childService;
     private final ChildParentFacade childParentFacade;
 
-    //todo @preAuthorize(hasAuthority('read:children'))
     @QueryMapping("getAllChildren")
-    public Flux<ChildDto> getAllChildren(GraphQLContext context) {
-        var userDetails = new UserDetails(context);
-        return childService.getAllChildren(userDetails);
+    public Flux<ChildDto> getAllChildren(Authentication authentication, GraphQLContext context) {
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
+            List<String> permissions = principal.getClaimAsStringList("permissions");
+            System.out.println("Permissions: " + permissions);
+            if (permissions.contains("read:children")) {
+                return childService.getAllChildren(new UserDetails(context));
+            } else {
+                return Flux.error(new IllegalArgumentException("User not authorized"));
+            }
+        } else {
+            return Flux.error(new IllegalArgumentException("User not authenticated"));
+        }
     }
 
     @QueryMapping("getChildById")
-    public Mono<ChildWithParentsDto> getChildById(@Argument String id) {
-        return childParentFacade.getChildById(id)
+    public Mono<ChildWithParentsDto> getChildById(GraphQLContext context, @Argument String id) {
+        return childParentFacade.getChildById(new UserDetails(context), id)
                 .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
     }
 

@@ -1,6 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
-import com.fleotadezuta.youthprogrammanager.config.Auth0Service;
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
@@ -11,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,8 +18,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-
-import static org.springframework.security.authorization.AuthorityReactiveAuthorizationManager.hasAuthority;
 
 
 @Controller
@@ -38,7 +33,7 @@ public class ChildController {
         if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
             List<String> permissions = principal.getClaimAsStringList("permissions");
             System.out.println("Permissions: " + permissions);
-            if (permissions.contains("read:children")) {
+            if (permissions.contains("list:children")) {
                 return childService.getAllChildren(new UserDetails(context));
             } else {
                 return Flux.error(new IllegalArgumentException("User not authorized"));
@@ -49,9 +44,19 @@ public class ChildController {
     }
 
     @QueryMapping("getChildById")
-    public Mono<ChildWithParentsDto> getChildById(GraphQLContext context, @Argument String id) {
-        return childParentFacade.getChildById(new UserDetails(context), id)
-                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
+    public Mono<ChildWithParentsDto> getChildById(Authentication authentication, GraphQLContext context, @Argument String id) {
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
+            List<String> permissions = principal.getClaimAsStringList("permissions");
+            System.out.println("Permissions: " + permissions);
+            if (permissions.contains("read:children")) {
+                return childParentFacade.getChildById(new UserDetails(context), id)
+                        .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
+            } else {
+                return Mono.error(new IllegalArgumentException("User not authorized"));
+            }
+        } else {
+            return Mono.error(new IllegalArgumentException("User not authenticated"));
+        }
     }
 
     @MutationMapping("addChild")

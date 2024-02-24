@@ -11,7 +11,9 @@ import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -78,9 +80,7 @@ public class ChildParentFacade {
 
 
     public Mono<ChildWithParentsDto> getChildById(UserDetails userDetails, String id) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new IllegalArgumentException("User not authorized"));
-        }
+
         return childRepository.findById(id)
                 .flatMap(child -> {
                     List<String> parentIds = Optional.ofNullable(child.getRelativeParents())
@@ -88,8 +88,8 @@ public class ChildParentFacade {
                                     .map(RelativeParent::getId)
                                     .toList())
                             .orElse(Collections.emptyList());
-                    if (!parentIds.contains(userDetails.getUserId())) {
-                        return Mono.error(new IllegalArgumentException("User not authorized"));
+                    if (!userDetails.getUserType().equals("ADMIN") && !parentIds.contains(userDetails.getUserId())) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
                     }
                     return parentService.findAllById(parentIds)
                             .collectMap(parentDto -> parentDto, parent -> child.getRelativeParents()

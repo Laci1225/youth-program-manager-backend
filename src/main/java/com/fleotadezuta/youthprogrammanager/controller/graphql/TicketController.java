@@ -1,21 +1,23 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.TicketChildTicketTypeFacade;
-import com.fleotadezuta.youthprogrammanager.model.TicketCreationDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
-import com.fleotadezuta.youthprogrammanager.model.TicketUpdateDto;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
+import graphql.GraphQLContext;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Controller
 @AllArgsConstructor
@@ -24,9 +26,20 @@ public class TicketController {
     private final TicketChildTicketTypeFacade ticketChildTicketTypeFacade;
 
     @QueryMapping("getAllTickets")
-    public Flux<TicketDto> getAllTickets() {
-        return ticketChildTicketTypeFacade.getAllTickets()
-                .doOnComplete(() -> log.info("All ticket fetched successfully"));
+    public Flux<TicketDto> getAllTickets(Authentication authentication, GraphQLContext context) {
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
+            List<String> permissions = principal.getClaimAsStringList("permissions");
+            System.out.println("Permissions: " + permissions);
+            if (permissions.contains("list:tickets")) {
+                return ticketChildTicketTypeFacade.getAllTickets(new UserDetails(context))
+                        .doOnComplete(() -> log.info("All ticket fetched successfully"));
+            } else {
+                return Flux.error(new IllegalArgumentException("User not authorized"));
+            }
+        } else {
+            return Flux.error(new IllegalArgumentException("User not authenticated"));
+        }
+
     }
 
     @QueryMapping("getTicketById")

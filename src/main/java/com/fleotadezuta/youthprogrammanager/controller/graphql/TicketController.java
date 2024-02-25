@@ -43,9 +43,19 @@ public class TicketController {
     }
 
     @QueryMapping("getTicketById")
-    public Mono<TicketDto> getTicketById(@Argument String id) {
-        return ticketChildTicketTypeFacade.getTicketById(id)
-                .doOnSuccess(ticketDto -> log.info("Retrieved Ticket by ID: " + id));
+    public Mono<TicketDto> getTicketById(Authentication authentication, @Argument String id) {
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
+            List<String> permissions = principal.getClaimAsStringList("permissions");
+            System.out.println("Permissions: " + permissions);
+            if (permissions.contains("read:tickets")) {
+                return ticketChildTicketTypeFacade.getTicketById(id)
+                        .doOnSuccess(ticketDto -> log.info("Retrieved Ticket by ID: " + id));
+            } else {
+                return Mono.error(new IllegalArgumentException("User not authorized"));
+            }
+        } else {
+            return Mono.error(new IllegalArgumentException("User not authenticated"));
+        }
     }
 
     @MutationMapping("addTicket")
@@ -73,14 +83,14 @@ public class TicketController {
     }
 
     @MutationMapping("reportParticipation")
-    public Mono<TicketDto> reportParticipation(@Argument String id, @Argument @RequestBody HistoryData historyData) {
-        return ticketChildTicketTypeFacade.reportParticipation(id, historyData)
+    public Mono<TicketDto> reportParticipation(GraphQLContext context, @Argument String id, @Argument @RequestBody HistoryData historyData) {
+        return ticketChildTicketTypeFacade.reportParticipation(new UserDetails(context), id, historyData)
                 .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
     }
 
     @MutationMapping("removeParticipation")
-    public Mono<TicketDto> removeParticipation(@Argument String id, @Argument @RequestBody HistoryData historyData) {
-        return ticketChildTicketTypeFacade.removeParticipation(id, historyData)
+    public Mono<TicketDto> removeParticipation(GraphQLContext context, @Argument String id, @Argument @RequestBody HistoryData historyData) {
+        return ticketChildTicketTypeFacade.removeParticipation(new UserDetails(context), id, historyData)
                 .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
 
     }

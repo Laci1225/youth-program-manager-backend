@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.*;
+import graphql.GraphQLContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,8 +54,8 @@ public class ParentController {
     }
 
     @QueryMapping("getParentById")
-    public Mono<ParentWithChildrenDto> getParentById(@Argument String id) {
-        return childParentFacade.getParentById(id)
+    public Mono<ParentWithChildrenDto> getParentById(GraphQLContext context, @Argument String id) {
+        return childParentFacade.getParentById(new UserDetails(context), id)
                 .doOnSuccess(parentDto -> log.info("Retrieved Parent by ID: " + id));
     }
 
@@ -104,14 +105,14 @@ public class ParentController {
     }
 
     @MutationMapping("updateParent")
-    public Mono<ParentDto> updateParent(@Valid @RequestBody @Argument ParentUpdateDto parent) {
-        return childParentFacade.updateParent(parent)
+    public Mono<ParentDto> updateParent(GraphQLContext context, @Valid @RequestBody @Argument ParentUpdateDto parent) {
+        return childParentFacade.updateParent(new UserDetails(context), parent)
                 .doOnSuccess(parentDto -> log.info("Updated Parent: " + parentDto));
     }
 
     @MutationMapping("deleteParent")
-    public Mono<ParentDto> deleteParent(@Argument String id) {
-        return childParentFacade.deleteParent(id)
+    public Mono<ParentDto> deleteParent(GraphQLContext context, @Argument String id) {
+        return childParentFacade.deleteParent(new UserDetails(context), id)
                 .doOnSuccess(deletedParent -> log.info("Deleted Parent with ID: " + deletedParent.getId()));
     }
 

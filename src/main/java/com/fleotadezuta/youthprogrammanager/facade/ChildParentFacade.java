@@ -71,10 +71,10 @@ public class ChildParentFacade {
                 .onErrorResume(Mono::error);
     }
 
-    public Mono<ParentDto> deleteParent(String id) {
+    public Mono<ParentDto> deleteParent(UserDetails userDetails, String id) {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
-                        .then(childService.removeParentFromChildren(parent.getId()))
+                        .then(childService.removeParentFromChildren(userDetails, parent.getId()))
                         .thenReturn(parent));
     }
 
@@ -116,17 +116,22 @@ public class ChildParentFacade {
                 });
     }
 
-    public Mono<ParentWithChildrenDto> getParentById(String id) {
-        return parentService.findById(id)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parent -> childService.findByParentId(parent.getId())
-                        .collectList()
-                        .map(children -> {
-                            var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
-                            List<ChildDto> childDtos = new ArrayList<>(children);
-                            parentWithChildrenDto.setChildDtos(childDtos);
-                            return parentWithChildrenDto;
-                        }));
+    public Mono<ParentWithChildrenDto> getParentById(UserDetails userDetails, String id) {
+        if (userDetails.getUserId().equals(id) || userDetails.getUserType().equals("ADMIN")) {
+            return parentService.findById(id)
+                    .map(parentMapper::fromParentDtoToParentDocument)
+                    .flatMap(parent -> childService.findByParentId(parent.getId())
+                            .collectList()
+                            .map(children -> {
+                                var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
+                                List<ChildDto> childDtos = new ArrayList<>(children);
+                                parentWithChildrenDto.setChildDtos(childDtos);
+                                return parentWithChildrenDto;
+                            }));
+        } else {
+            log.error(userDetails.getUserId() + " is not authorized to view parent with id: " + id);
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        }
     }
 
     public Mono<ParentDto> addParent(ParentCreateDto parentCreateDto) {
@@ -153,8 +158,8 @@ public class ChildParentFacade {
     }
 
 
-    public Mono<ParentDto> updateParent(ParentUpdateDto parentUpdateDto) {
-        return getParentById(parentUpdateDto.getId())
+    public Mono<ParentDto> updateParent(UserDetails userDetails, ParentUpdateDto parentUpdateDto) {
+        return getParentById(userDetails, parentUpdateDto.getId())
                 .flatMap(previousParent -> {
                     var parentDto = parentMapper.fromParentUpdateDtoToParentDto(parentUpdateDto);
                     return Mono.just(parentDto)

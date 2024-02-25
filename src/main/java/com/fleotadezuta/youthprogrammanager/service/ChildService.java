@@ -8,13 +8,17 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 
 @Service
@@ -35,18 +39,30 @@ public class ChildService {
         }
     }
 
-    public Mono<ChildDto> deleteChild(String id) {
+    public Mono<ChildDto> deleteChild(UserDetails userDetails, String id) {
         return childRepository.findById(id)
-                .flatMap(child -> childRepository.deleteById(id)
-                        .then(Mono.just(child)))
+                .flatMap(child -> {
+                    if (child.getRelativeParents().stream()
+                            .noneMatch(parent -> parent.getId()
+                                    .equals(userDetails.getUserId()))
+                            && !userDetails.getUserType().equals("ADMIN")) {
+                        return Mono.error(new ResponseStatusException(FORBIDDEN, "User not authorized to delete child"));
+                    }
+                    return childRepository.deleteById(id)
+                            .then(Mono.just(child));
+                })
                 .map(childMapper::fromChildDocumentToChildDto);
     }
 
-    public Mono<ChildUpdateDto> updateChild(ChildUpdateDto childUpdateDto) {
+    public Mono<ChildUpdateDto> updateChild(UserDetails userDetails, ChildUpdateDto childUpdateDto) {
         List<String> parentIds = childUpdateDto.getRelativeParents()
                 .stream()
                 .map(RelativeParent::getId)
                 .toList();
+        if (!parentIds.contains(userDetails.getUserId())
+                && !userDetails.getUserType().equals("ADMIN")) {
+            return Mono.error(new ResponseStatusException(FORBIDDEN, "User not authorized to delete child"));
+        }
         Set<String> uniqueParentIds = new HashSet<>(parentIds);
         if (parentIds.size() != uniqueParentIds.size()) {
             return Mono.error(new IllegalArgumentException("Relative parent IDs are not unique"));
@@ -60,12 +76,12 @@ public class ChildService {
                 .map(childMapper::fromChildDocumentToChildUpdateDto);
     }
 
-    public Mono<Void> removeParentFromChildren(String parentIdToRemove) {
+    public Mono<Void> removeParentFromChildren(UserDetails userDetails, String parentIdToRemove) {
         return findByParentId(parentIdToRemove)
                 .map(childMapper::fromChildDtoToChildDocument)
                 .flatMap(child -> {
                     child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
-                    return updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
+                    return updateChild(userDetails, childMapper.fromChildDocumentToChildUpdateDto(child));
                 }).then(); //to return Mono<Void>
     }
 

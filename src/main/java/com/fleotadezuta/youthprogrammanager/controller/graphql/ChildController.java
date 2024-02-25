@@ -66,14 +66,14 @@ public class ChildController {
     }
 
     @MutationMapping("updateChild")
-    public Mono<ChildUpdateDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
-        return childService.updateChild(child)
+    public Mono<ChildUpdateDto> updateChild(GraphQLContext context, @Valid @RequestBody @Argument ChildUpdateDto child) {
+        return childService.updateChild(new UserDetails(context), child)
                 .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }
 
     @MutationMapping("deleteChild")
-    public Mono<ChildDto> deleteChild(@Argument String id) {
-        return childService.deleteChild(id)
+    public Mono<ChildDto> deleteChild(GraphQLContext context, @Argument String id) {
+        return childService.deleteChild(new UserDetails(context), id)
                 .doOnSuccess(deletedChild -> log.info("Deleted Child with ID: " + deletedChild.getId()));
     }
 

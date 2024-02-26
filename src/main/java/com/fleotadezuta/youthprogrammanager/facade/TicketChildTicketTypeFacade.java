@@ -9,7 +9,6 @@ import com.fleotadezuta.youthprogrammanager.service.TicketService;
 import com.fleotadezuta.youthprogrammanager.service.TicketTypeService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -102,9 +101,6 @@ public class TicketChildTicketTypeFacade {
 
 
     public Mono<TicketDto> reportParticipation(UserDetails userDetails, String id, HistoryData historyData) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "User not authorized to report participation"));
-        }
         return ticketService.findById(id)
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDocument -> {

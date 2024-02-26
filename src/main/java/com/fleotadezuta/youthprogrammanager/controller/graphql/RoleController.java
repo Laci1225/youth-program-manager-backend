@@ -17,7 +17,7 @@ import java.io.IOException;
 public class RoleController {
     private RoleService roleService;
 
-    @QueryMapping("getAllRoles")
+    @QueryMapping("getAllRoles") //todo delete
     public Flux<String> getAllRoles(GraphQLContext context) throws IOException {
         return roleService.getAllRoles(new UserDetails(context))
                 .doOnComplete(() -> log.info("All roles fetched successfully"));

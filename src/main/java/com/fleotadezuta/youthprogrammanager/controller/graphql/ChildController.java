@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
@@ -28,19 +29,20 @@ public class ChildController {
     private final ChildService childService;
     private final ChildParentFacade childParentFacade;
 
+    @PreAuthorize("hasAuthority('list:children')")
     @QueryMapping("getAllChildren")
     public Flux<ChildDto> getAllChildren(Authentication authentication, GraphQLContext context) {
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
+       /* if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
             List<String> permissions = principal.getClaimAsStringList("permissions");
             System.out.println("Permissions: " + permissions);
-            if (permissions.contains("list:children")) {
-                return childService.getAllChildren(new UserDetails(context));
-            } else {
+            if (permissions.contains("list:children")) {*/
+        return childService.getAllChildren(new UserDetails(context));
+           /* } else {
                 return Flux.error(new IllegalArgumentException("User not authorized"));
             }
         } else {
             return Flux.error(new IllegalArgumentException("User not authenticated"));
-        }
+        }*/
     }
 
     @QueryMapping("getChildById")

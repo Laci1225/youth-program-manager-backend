@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ import java.util.List;
 public class TicketController {
     private final TicketChildTicketTypeFacade ticketChildTicketTypeFacade;
 
+    @PreAuthorize("hasAuthority('list:tickets')")
     @QueryMapping("getAllTickets")
     public Flux<TicketDto> getAllTickets(Authentication authentication, GraphQLContext context) {
         if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
@@ -42,6 +44,7 @@ public class TicketController {
 
     }
 
+    @PreAuthorize("hasAuthority('read:tickets')")
     @QueryMapping("getTicketById")
     public Mono<TicketDto> getTicketById(Authentication authentication, @Argument String id) {
         if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
@@ -58,18 +61,21 @@ public class TicketController {
         }
     }
 
+    @PreAuthorize("hasAuthority('create:tickets')")
     @MutationMapping("addTicket")
     public Mono<TicketDto> addTicket(@Valid @RequestBody @Argument TicketCreationDto ticket) {
         return ticketChildTicketTypeFacade.addTicket(ticket)
                 .doOnSuccess(ticketDto -> log.info("Added Ticket with data: " + ticketDto));
     }
 
+    @PreAuthorize("hasAuthority('update:tickets')")
     @MutationMapping("updateTicket")
     public Mono<TicketDto> updateTicket(@Argument String id, @Valid @RequestBody @Argument TicketUpdateDto ticket) {
         return ticketChildTicketTypeFacade.updateTicket(id, ticket)
                 .doOnSuccess(ticketDto -> log.info("Updated Ticket with ID: " + id));
     }
 
+    @PreAuthorize("hasAuthority('delete:tickets')")
     @MutationMapping("deleteTicket")
     public Mono<TicketDto> deleteTicket(@Argument String id) {
         return ticketChildTicketTypeFacade.deleteTicket(id)
@@ -82,12 +88,14 @@ public class TicketController {
                 .doOnNext(ticket -> log.info("Ticket type with name " + ticket.getName() + " fetched successfully"));
     }
 
+    @PreAuthorize("hasAuthority('create:ticket-participations')")
     @MutationMapping("reportParticipation")
     public Mono<TicketDto> reportParticipation(GraphQLContext context, @Argument String id, @Argument @RequestBody HistoryData historyData) {
         return ticketChildTicketTypeFacade.reportParticipation(new UserDetails(context), id, historyData)
                 .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
     }
 
+    @PreAuthorize("hasAuthority('delete:ticket-participations')")
     @MutationMapping("removeParticipation")
     public Mono<TicketDto> removeParticipation(GraphQLContext context, @Argument String id, @Argument @RequestBody HistoryData historyData) {
         return ticketChildTicketTypeFacade.removeParticipation(new UserDetails(context), id, historyData)

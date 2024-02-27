@@ -1,5 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
@@ -9,20 +11,29 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChildParentFacade {
+
+    @Value("${auth0.management.audience}")
+    private String audience;
+    @Value("${auth0.management.api.token}")
+    private String accessToken;
+
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
     private final ParentMapper parentMapper;
@@ -135,8 +146,7 @@ public class ChildParentFacade {
     }
 
     public Mono<ParentDto> addParent(ParentCreateDto parentCreateDto) {
-        var parentDto = parentMapper.fromParentCreateDtoToParentDto(parentCreateDto);
-        return parentService.validateParent(parentDto)
+        var parentDtoMono = parentService.validateParent(parentMapper.fromParentCreateDtoToParentDto(parentCreateDto))
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parentService::save)
                 .flatMap(validatedParent -> {
@@ -155,6 +165,50 @@ public class ChildParentFacade {
                                 });
                     }
                 });
+        return parentDtoMono.doOnSuccess(parentDto -> {
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            MediaType mediaType = MediaType.parse("application/json");
+            RequestBody body = RequestBody.create(
+                    "{\"email\":\"" + parentDto.getEmail() + "\"," +
+                            "\"connection\":\"email\"," +
+                            "\"app_metadata\":{\"app_user_id\":\"" + parentDto.getId() + "\", \"app_user_type\":\"PARENT\"}," +
+                            "\"given_name\":\"" + parentDto.getGivenName() + "\"," +
+                            "\"family_name\":\"" + parentDto.getFamilyName() + "\"}",
+                    mediaType);
+            Request request = new Request.Builder()
+                    .url(audience + "users")
+                    .method("POST", body)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json")
+                    .addHeader("Authorization", "Bearer " + accessToken)
+                    .build();
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    String responseBody = Objects.requireNonNull(response.body()).string();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode jsonNode = objectMapper.readTree(responseBody);
+                    String userId = jsonNode.get("user_id").asText();
+                    log.error("User created with id: " + userId);
+                    RequestBody body2 = RequestBody.create(
+                            "{\"users\":[\"" + userId + "\"]}",
+                            mediaType);
+                    Request request2 = new Request.Builder()
+                            .url(audience + "roles/rol_Mjt9yu2PlPadWRn5/users")
+                            .method("POST", body2)
+                            .addHeader("Content-Type", "application/json")
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .build();
+                    Response response2 = client.newCall(request2).execute();
+                    log.error(response2.body().string());
+                } else {
+                    System.err.println("Error: " + response.code() + ", " + response.message());
+                    System.err.println(response.body().string());
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 

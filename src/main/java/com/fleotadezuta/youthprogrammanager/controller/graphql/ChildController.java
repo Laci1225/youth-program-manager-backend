@@ -32,19 +32,10 @@ public class ChildController {
     @PreAuthorize("hasAuthority('list:children')")
     @QueryMapping("getAllChildren")
     public Flux<ChildDto> getAllChildren(Authentication authentication, GraphQLContext context) {
-       /* if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
-            List<String> permissions = principal.getClaimAsStringList("permissions");
-            System.out.println("Permissions: " + permissions);
-            if (permissions.contains("list:children")) {*/
         return childService.getAllChildren(new UserDetails(context));
-           /* } else {
-                return Flux.error(new IllegalArgumentException("User not authorized"));
-            }
-        } else {
-            return Flux.error(new IllegalArgumentException("User not authenticated"));
-        }*/
     }
 
+    @PreAuthorize("hasAuthority('read:children')")
     @QueryMapping("getChildById")
     public Mono<ChildWithParentsDto> getChildById(Authentication authentication, GraphQLContext context, @Argument String id) {
         if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
@@ -61,18 +52,21 @@ public class ChildController {
         }
     }
 
+    @PreAuthorize("hasAuthority('create:children')")
     @MutationMapping("addChild")
     public Mono<ChildDto> addChild(@Valid @RequestBody @Argument ChildCreateDto child) {
         return childParentFacade.addChild(child)
                 .doOnSuccess(childDto -> log.info("Added Child with data: " + childDto));
     }
 
+    @PreAuthorize("hasAuthority('update:children')")
     @MutationMapping("updateChild")
     public Mono<ChildUpdateDto> updateChild(GraphQLContext context, @Valid @RequestBody @Argument ChildUpdateDto child) {
         return childService.updateChild(new UserDetails(context), child)
                 .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }
 
+    @PreAuthorize("hasAuthority('delete:children')")
     @MutationMapping("deleteChild")
     public Mono<ChildDto> deleteChild(GraphQLContext context, @Argument String id) {
         return childService.deleteChild(new UserDetails(context), id)

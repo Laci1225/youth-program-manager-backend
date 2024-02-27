@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ParentDto {
     private String id;
+    private String email;
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;

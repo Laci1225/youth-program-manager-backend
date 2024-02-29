@@ -30,14 +30,14 @@ public class ParentController {
                 .doOnComplete(() -> log.info("All parents fetched successfully"));
     }
 
-    @QueryMapping("getMyData")
+    @QueryMapping("getMyData") //todo change or simplify
     public Mono<ParentWithChildrenDto> getMyData(GraphQLContext context) {
         return childParentFacade.getParentById(new UserDetails(context), new UserDetails(context).getUserId())
                 .doOnSuccess(parentDto -> log.info("Retrieved Parent by ID: " + parentDto.getId()));
     }
 
     @PreAuthorize("hasAuthority('read:parents')")
-    @QueryMapping("getParentById")
+    @QueryMapping("getParentById") //todo other parent should be visible if same child
     public Mono<ParentWithChildrenDto> getParentById(GraphQLContext context, @Argument String id) {
         return childParentFacade.getParentById(new UserDetails(context), id)
                 .doOnSuccess(parentDto -> log.info("Retrieved Parent: " + parentDto));

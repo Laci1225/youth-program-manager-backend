@@ -9,9 +9,10 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TicketMapper {
-    @Mapping(target = "child", ignore = true)
-    @Mapping(target = "ticketType", ignore = true)
+    @Mapping(target = "child.id", source = "ticketDocument.childId")
+    @Mapping(target = "ticketType.id", source = "ticketDocument.ticketTypeId")
     TicketDto fromTicketDocumentToTicketDto(TicketDocument ticketDocument);
+
 
     @BeanMapping(builder = @Builder(disableBuilder = true))
     @Mapping(target = "child", ignore = true)

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Compiled class file
 *.class
 
@@ -57,4 +56,5 @@ build/
 
 ### VS Code ###
 .vscode/
->>>>>>> 9bea704 (YPM-1: Initial commit)
+
+application-local.properties

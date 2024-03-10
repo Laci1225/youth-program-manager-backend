@@ -23,8 +23,6 @@ public class SecurityConfig {
         return http
                 .authorizeExchange(expressionInterceptUrlRegistry ->
                         expressionInterceptUrlRegistry
-                                .pathMatchers("/graphql")
-                                .authenticated()
                                 .anyExchange()
                                 .authenticated()
                 )

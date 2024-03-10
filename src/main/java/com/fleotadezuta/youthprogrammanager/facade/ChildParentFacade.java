@@ -128,21 +128,43 @@ public class ChildParentFacade {
     }
 
     public Mono<ParentWithChildrenDto> getParentById(UserDetails userDetails, String id) {
-        if (userDetails.getUserId().equals(id) || userDetails.getUserType().equals("ADMIN")) {
+        if (id.equals("me") || userDetails.getUserId().equals(id)) {
+            return parentService.findById(userDetails.getUserId())
+                    .map(parentMapper::fromParentDtoToParentDocument)
+                    .flatMap(this::getChildDetails);
+        } else if (userDetails.getUserType().equals("ADMIN")) {
             return parentService.findById(id)
                     .map(parentMapper::fromParentDtoToParentDocument)
-                    .flatMap(parent -> childService.findByParentId(parent.getId())
-                            .collectList()
-                            .map(children -> {
-                                var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
-                                List<ChildDto> childDtos = new ArrayList<>(children);
-                                parentWithChildrenDto.setChildDtos(childDtos);
-                                return parentWithChildrenDto;
-                            }));
-        } else {
-            log.error(userDetails.getUserId() + " is not authorized to view parent with id: " + id);
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+                    .flatMap(this::getChildDetails);
         }
+        return isOtherParentOfChildren(userDetails.getUserId(), id)
+                .filter(isOtherParent -> isOtherParent)
+                .flatMap(isOtherParent -> parentService.findById(id)
+                        .map(parentMapper::fromParentDtoToParentDocument)
+                        .flatMap(this::getChildDetails))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    private Mono<Boolean> isOtherParentOfChildren(String userId, String parentId) {
+        Flux<ChildDto> myChildren = childService.findByParentId(userId);
+        Flux<ChildDto> parentChildren = childService.findByParentId(parentId);
+
+        Mono<Long> totalCount = Flux.merge(myChildren, parentChildren).count();
+        Mono<Long> distinctCount = Flux.merge(myChildren, parentChildren).distinct().count();
+
+        return totalCount.zipWith(distinctCount, (total, distinct) -> !total.equals(distinct));
+    }
+
+    private Mono<ParentWithChildrenDto> getChildDetails(ParentDocument parent) {
+        return childService.findByParentId(parent.getId())
+                .collectList()
+                .map(children -> {
+                    var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
+                    List<ChildDto> childDtos = new ArrayList<>(children);
+                    parentWithChildrenDto.setChildDtos(childDtos);
+                    return parentWithChildrenDto;
+                });
     }
 
     public Mono<ParentDto> addParent(ParentCreateDto parentCreateDto) {

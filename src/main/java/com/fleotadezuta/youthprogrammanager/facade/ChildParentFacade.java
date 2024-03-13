@@ -8,8 +8,10 @@ import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
+import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
+import com.fleotadezuta.youthprogrammanager.service.EmployeeService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -188,48 +190,7 @@ public class ChildParentFacade {
                     }
                 });
         return parentDtoMono.doOnSuccess(parentDto -> {
-            OkHttpClient client = new OkHttpClient().newBuilder()
-                    .build();
-            MediaType mediaType = MediaType.parse("application/json");
-            RequestBody body = RequestBody.create(
-                    "{\"email\":\"" + parentDto.getEmail() + "\"," +
-                            "\"connection\":\"email\"," +
-                            "\"app_metadata\":{\"app_user_id\":\"" + parentDto.getId() + "\", \"app_user_type\":\"PARENT\"}," +
-                            "\"given_name\":\"" + parentDto.getGivenName() + "\"," +
-                            "\"family_name\":\"" + parentDto.getFamilyName() + "\"}",
-                    mediaType);
-            Request request = new Request.Builder()
-                    .url(audience + "users")
-                    .method("POST", body)
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Accept", "application/json")
-                    .addHeader("Authorization", "Bearer " + accessToken)
-                    .build();
-            try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful()) {
-                    String responseBody = Objects.requireNonNull(response.body()).string();
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    String userId = jsonNode.get("user_id").asText();
-                    log.error("User created with id: " + userId);
-                    RequestBody body2 = RequestBody.create(
-                            "{\"users\":[\"" + userId + "\"]}",
-                            mediaType);
-                    Request request2 = new Request.Builder()
-                            .url(audience + "roles/rol_Mjt9yu2PlPadWRn5/users")
-                            .method("POST", body2)
-                            .addHeader("Content-Type", "application/json")
-                            .addHeader("Authorization", "Bearer " + accessToken)
-                            .build();
-                    Response response2 = client.newCall(request2).execute();
-                    log.error(response2.body().string());
-                } else {
-                    System.err.println("Error: " + response.code() + ", " + response.message());
-                    System.err.println(response.body().string());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            EmployeeService.CreateProps(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), audience, accessToken, log, Role.PARENT.getRoleId());
         });
     }
 

@@ -38,8 +38,8 @@ public class EmployeeController {
 
     @PreAuthorize("hasAuthority('create:employees')")
     @MutationMapping("addEmployee")
-    public Mono<EmployeeDto> addEmployee(@Valid @RequestBody @Argument EmployeeDto employee) {
-        return employeeService.addEmployee(employee)
+    public Mono<EmployeeDto> addEmployee(GraphQLContext context, @Valid @RequestBody @Argument EmployeeDto employee) {
+        return employeeService.addEmployee(new UserDetails(context), employee)
                 .doOnSuccess(employeeDto -> log.info("Added Employee with data: " + employeeDto));
     }
 

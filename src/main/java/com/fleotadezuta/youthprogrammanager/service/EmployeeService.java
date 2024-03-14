@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.EmployeeMapper;
 import com.fleotadezuta.youthprogrammanager.model.EmployeeDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
-import com.fleotadezuta.youthprogrammanager.persistence.document.EmployeeType;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,19 +50,17 @@ public class EmployeeService {
     }
 
     public Mono<EmployeeDto> addEmployee(UserDetails userDetails, EmployeeDto employeeDto) {
-        log.error(userDetails.getUserType());
-        log.error(EmployeeType.ADMINISTRATOR.name());
-        if (userDetails.getUserType().equals(EmployeeType.ADMINISTRATOR.name())) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
                     .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.ADMINISTRATOR))
                     .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
         }
-        if (userDetails.getUserType().equals(EmployeeType.RECEPTIONIST.name())) {
+        if (userDetails.getUserType().equals(Role.RECEPTIONIST.name())) {
             return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
                     .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.RECEPTIONIST))
                     .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
         }
-        if (userDetails.getUserType().equals(EmployeeType.TEACHER.name())) {
+        if (userDetails.getUserType().equals(Role.TEACHER.name())) {
             return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
                     .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.TEACHER))
                     .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);

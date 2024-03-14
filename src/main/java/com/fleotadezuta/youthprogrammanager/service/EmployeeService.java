@@ -5,15 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.EmployeeMapper;
 import com.fleotadezuta.youthprogrammanager.model.EmployeeDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
-import com.fleotadezuta.youthprogrammanager.persistence.document.EmployeeDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.EmployeeType;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.EmployeeRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -26,13 +23,13 @@ import java.util.Objects;
 @Slf4j
 @RequiredArgsConstructor
 public class EmployeeService {
-    private EmployeeRepository employeeRepository;
-    private EmployeeMapper employeeMapper;
+    private final EmployeeRepository employeeRepository;
+    private final EmployeeMapper employeeMapper;
 
     @Value("${auth0.management.audience}")
-    private static String audience;
+    private String audience;
     @Value("${auth0.management.api.token}")
-    private static String accessToken;
+    private String accessToken;
 
     public Flux<EmployeeDto> getAllEmployees() {
         return employeeRepository.findAll()
@@ -54,39 +51,35 @@ public class EmployeeService {
     }
 
     public Mono<EmployeeDto> addEmployee(UserDetails userDetails, EmployeeDto employeeDto) {
+        log.error(userDetails.getUserType());
+        log.error(EmployeeType.ADMINISTRATOR.name());
         if (userDetails.getUserType().equals(EmployeeType.ADMINISTRATOR.name())) {
             return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                    .doOnSuccess((employeeDocument) -> {
-                        CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), audience, accessToken, log, Role.ADMINISTRATOR.getRoleId());
-                    })
+                    .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.ADMINISTRATOR))
                     .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
         }
         if (userDetails.getUserType().equals(EmployeeType.RECEPTIONIST.name())) {
             return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                    .doOnSuccess((employeeDocument) -> {
-                        CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), audience, accessToken, log, Role.RECEPTIONIST.getRoleId());
-                    })
+                    .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.RECEPTIONIST))
                     .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
         }
         if (userDetails.getUserType().equals(EmployeeType.TEACHER.name())) {
             return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                    .doOnSuccess((employeeDocument) -> {
-                        CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), audience, accessToken, log, Role.TEACHER.getRoleId());
-                    })
+                    .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.TEACHER))
                     .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
         } else {
             return Mono.error(new RuntimeException("User not authorized to add employee"));
         }
     }
 
-    public static void CreateProps(String email, String id, String givenName, String familyName, String audience, String accessToken, Logger log, String role) {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
+    public void CreateProps(String email, String id, String givenName, String familyName, Role role) {
+        log.error("Audience: " + audience);
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(
                 "{\"email\":\"" + email + "\"," +
                         "\"connection\":\"email\"," +
-                        "\"app_metadata\":{\"app_user_id\":\"" + id + "\", \"app_user_type\":\"PARENT\"}," +
+                        "\"app_metadata\":{\"app_user_id\":\"" + id + "\", \"app_user_type\":\"" + role.name() + "\"}," +
                         "\"given_name\":\"" + givenName + "\"," +
                         "\"family_name\":\"" + familyName + "\"}",
                 mediaType);
@@ -108,7 +101,7 @@ public class EmployeeService {
                         "{\"users\":[\"" + userId + "\"]}",
                         mediaType);
                 Request request2 = new Request.Builder()
-                        .url(audience + "roles/" + role + "/users")
+                        .url(audience + "roles/" + role.getRoleId() + "/users")
                         .method("POST", body2)
                         .addHeader("Content-Type", "application/json")
                         .addHeader("Authorization", "Bearer " + accessToken)

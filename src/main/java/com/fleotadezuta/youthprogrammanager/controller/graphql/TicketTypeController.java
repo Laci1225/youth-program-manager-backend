@@ -52,7 +52,7 @@ public class TicketTypeController {
     }
 
     @PreAuthorize("hasAuthority('delete:ticket-types')")
-    @MutationMapping("deletedTicketType")
+    @MutationMapping("deleteTicketType")
     public Mono<TicketTypeDto> deletedTicketType(GraphQLContext context, @Argument String id) {
         return ticketTypeService.deletedTicketType(new UserDetails(context), id)
                 .doOnSuccess(deletedTicketType -> log.info("Deleted Ticket type with ID: " + deletedTicketType.getId()));

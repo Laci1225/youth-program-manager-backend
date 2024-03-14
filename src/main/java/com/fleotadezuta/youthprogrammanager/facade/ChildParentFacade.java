@@ -1,7 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
@@ -15,7 +13,6 @@ import com.fleotadezuta.youthprogrammanager.service.EmployeeService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -31,16 +27,12 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ChildParentFacade {
 
-    @Value("${auth0.management.audience}")
-    private String audience;
-    @Value("${auth0.management.api.token}")
-    private String accessToken;
-
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
     private final ParentMapper parentMapper;
     private final ParentService parentService;
     private final ChildService childService;
+    private final EmployeeService employeeService;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -189,9 +181,7 @@ public class ChildParentFacade {
                                 });
                     }
                 });
-        return parentDtoMono.doOnSuccess(parentDto -> {
-            EmployeeService.CreateProps(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), audience, accessToken, log, Role.PARENT.getRoleId());
-        });
+        return parentDtoMono.doOnSuccess(parentDto -> employeeService.CreateProps(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT));
     }
 
 

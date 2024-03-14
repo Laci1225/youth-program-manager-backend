@@ -1,5 +1,8 @@
 package com.fleotadezuta.youthprogrammanager.persistence.document;
 
+import lombok.Getter;
+
+@Getter
 public enum Role {
     ADMINISTRATOR("rol_ZVbZjai55NpwOwhV"),
     RECEPTIONIST("rol_8zxbgZfLD9gqdT9V"),
@@ -12,8 +15,5 @@ public enum Role {
         this.roleId = roleId;
     }
 
-    public String getRoleId() {
-        return roleId;
-    }
 }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.EmployeeMapper;
 import com.fleotadezuta.youthprogrammanager.model.EmployeeDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
+import com.fleotadezuta.youthprogrammanager.persistence.document.EmployeeDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,47 +31,69 @@ public class EmployeeService {
     @Value("${auth0.management.api.token}")
     private String accessToken;
 
-    public Flux<EmployeeDto> getAllEmployees() {
+    public Flux<EmployeeDto> getAllEmployees(UserDetails userDetails) {
+        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
+            return Flux.error(new RuntimeException("User not authorized to get all employees"));
         return employeeRepository.findAll()
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }
 
     public Mono<EmployeeDto> deleteEmployee(UserDetails userDetails, String id) {
+        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
+            return Mono.error(new RuntimeException("User not authorized to delete employee"));
+        if (id.equals(userDetails.getUserId()))
+            return Mono.error(new RuntimeException("Cannot delete self"));
         return employeeRepository.findById(id)
-                .flatMap(employee -> employeeRepository.deleteById(id)
-                        .then(Mono.just(employee)))
-                .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
+                .flatMap(employee -> {
+                    if (employee.getType().equals(Role.ADMINISTRATOR)) {
+                        return employeeRepository.findAll()
+                                .map(EmployeeDocument::getType)
+                                .filter(Role.ADMINISTRATOR::equals)
+                                .count()
+                                .flatMap(count -> {
+                                    if (count < 2)
+                                        return Mono.error(new RuntimeException("Cannot delete the last administrator"));
+                                    else
+                                        return Mono.just(employee);
+                                });
+                    } else {
+                        return Mono.just(employee);
+                    }
+                }).flatMap(employee -> employeeRepository.deleteById(id).then(Mono.just(employee)))
+                .map(employeeMapper::fromEmployeeDocumentToEmployeeDto)
+                .doOnSuccess((employeeDto -> {
+                    OkHttpClient client = new OkHttpClient().newBuilder().build();
+                    MediaType mediaType = MediaType.parse("text/plain");
+                    RequestBody body = RequestBody.create(mediaType, "");
+                    Request request = new Request.Builder()
+                            .url(audience + id)
+                            .method("DELETE", body)
+                            .addHeader("Authorization", "Bearer " + accessToken)
+                            .build();
+                    try {
+                        Response response = client.newCall(request).execute();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }));
     }
 
     public Mono<EmployeeDto> updateEmployee(UserDetails userDetails, EmployeeDto employeeDto) {
-        if (!userDetails.getUserType().equals(employeeDto.getType().name()))
+        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
             return Mono.error(new RuntimeException("User not authorized to update employee"));
         return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }
 
     public Mono<EmployeeDto> addEmployee(UserDetails userDetails, EmployeeDto employeeDto) {
-        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
-            return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                    .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.ADMINISTRATOR))
-                    .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
-        }
-        if (userDetails.getUserType().equals(Role.RECEPTIONIST.name())) {
-            return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                    .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.RECEPTIONIST))
-                    .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
-        }
-        if (userDetails.getUserType().equals(Role.TEACHER.name())) {
-            return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                    .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), Role.TEACHER))
-                    .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
-        } else {
+        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
             return Mono.error(new RuntimeException("User not authorized to add employee"));
-        }
+        return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
+                .doOnSuccess((employeeDocument) -> CreateProps(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), employeeDocument.getType()))
+                .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }
 
     public void CreateProps(String email, String id, String givenName, String familyName, Role role) {
-        log.error("Audience: " + audience);
         OkHttpClient client = new OkHttpClient().newBuilder().build();
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(
@@ -115,6 +138,8 @@ public class EmployeeService {
     }
 
     public Mono<EmployeeDto> getEmployeeById(UserDetails userDetails, String id) {
+        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
+            return Mono.error(new RuntimeException("User not authorized to get employee by id"));
         return employeeRepository.findById(id)
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }

@@ -1,6 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.model;
 
 import com.fleotadezuta.youthprogrammanager.persistence.document.EmployeeType;
+import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +17,5 @@ public class EmployeeDto {
     private String givenName;
     private String email;
     private String phoneNumber;
-    private EmployeeType type;
+    private Role type;
 }

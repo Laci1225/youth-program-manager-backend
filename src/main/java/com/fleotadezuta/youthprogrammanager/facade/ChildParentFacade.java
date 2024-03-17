@@ -93,7 +93,10 @@ public class ChildParentFacade {
                                     .map(RelativeParent::getId)
                                     .toList())
                             .orElse(Collections.emptyList());
-                    if (!userDetails.getUserType().equals("ADMIN") && !parentIds.contains(userDetails.getUserId())) {
+                    if (!(userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
+                            || userDetails.getUserType().equals(Role.TEACHER.name())
+                            || userDetails.getUserType().equals(Role.RECEPTIONIST.name()))
+                            && !parentIds.contains(userDetails.getUserId())) {
                         return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
                     }
                     return parentService.findAllById(parentIds)
@@ -126,7 +129,9 @@ public class ChildParentFacade {
             return parentService.findById(userDetails.getUserId())
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);
-        } else if (userDetails.getUserType().equals("ADMIN")) {
+        } else if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
+                || userDetails.getUserType().equals(Role.TEACHER.name())
+                || userDetails.getUserType().equals(Role.RECEPTIONIST.name())) {
             return parentService.findById(id)
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);

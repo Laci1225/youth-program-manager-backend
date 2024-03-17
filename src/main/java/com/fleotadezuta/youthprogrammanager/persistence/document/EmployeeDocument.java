@@ -17,5 +17,5 @@ public class EmployeeDocument {
     private String givenName;
     private String email;
     private String phoneNumber;
-    private EmployeeType type;
+    private Role type;
 }

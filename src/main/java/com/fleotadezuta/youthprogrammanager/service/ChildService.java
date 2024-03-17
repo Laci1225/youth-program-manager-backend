@@ -6,6 +6,7 @@ import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
+import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.apache.catalina.User;
@@ -29,7 +30,9 @@ public class ChildService {
     private final ChildMapper childMapper;
 
     public Flux<ChildDto> getAllChildren(UserDetails userDetails) {
-        if (userDetails.getUserType().equals("ADMIN")) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
+                || userDetails.getUserType().equals(Role.RECEPTIONIST.name())
+                || userDetails.getUserType().equals(Role.TEACHER.name())) {
             return childRepository.findAll()
                     .map(childMapper::fromChildDocumentToChildDto);
         } else {
@@ -45,7 +48,7 @@ public class ChildService {
                     if (child.getRelativeParents().stream()
                             .noneMatch(parent -> parent.getId()
                                     .equals(userDetails.getUserId()))
-                            && !userDetails.getUserType().equals("ADMIN")) {
+                            && !userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
                         return Mono.error(new ResponseStatusException(FORBIDDEN, "User not authorized to delete child"));
                     }
                     return childRepository.deleteById(id)
@@ -60,7 +63,7 @@ public class ChildService {
                 .map(RelativeParent::getId)
                 .toList();
         if (!parentIds.contains(userDetails.getUserId())
-                && !userDetails.getUserType().equals("ADMIN")) {
+                && !userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return Mono.error(new ResponseStatusException(FORBIDDEN, "User not authorized to delete child"));
         }
         Set<String> uniqueParentIds = new HashSet<>(parentIds);

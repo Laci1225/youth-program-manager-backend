@@ -3,6 +3,7 @@ package com.fleotadezuta.youthprogrammanager.facade;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
+import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.TicketService;
@@ -32,7 +33,7 @@ public class TicketChildTicketTypeFacade {
     }
 
     public Flux<TicketDto> getAllTickets(UserDetails userDetails) {
-        if (userDetails.getUserType().equals("ADMIN")) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return ticketService.findAll()
                     .map(ticketMapper::fromTicketDtoToTicketDocument)
                     .flatMap(ticketDoc ->
@@ -113,7 +114,7 @@ public class TicketChildTicketTypeFacade {
     }
 
     public Mono<TicketDto> removeParticipation(UserDetails userDetails, String id, HistoryData historyData) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
+        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "User not authorized to report participation"));
         }
         return ticketService.findById(id)

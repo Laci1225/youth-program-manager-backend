@@ -24,8 +24,8 @@ public class EmployeeController {
 
     @PreAuthorize("hasAuthority('list:employees')")
     @QueryMapping("getAllEmployees")
-    public Flux<EmployeeDto> getAllEmployees() {
-        return employeeService.getAllEmployees()
+    public Flux<EmployeeDto> getAllEmployees(GraphQLContext context) {
+        return employeeService.getAllEmployees(new UserDetails(context))
                 .doOnComplete(() -> log.info("All employees fetched successfully"));
     }
 

@@ -1,7 +1,9 @@
 package com.fleotadezuta.youthprogrammanager.persistence.document;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 @Getter
 public enum Role {
     ADMINISTRATOR("rol_ZVbZjai55NpwOwhV"),
@@ -10,10 +12,5 @@ public enum Role {
     PARENT("rol_Mjt9yu2PlPadWRn5");
 
     private final String roleId;
-
-    Role(String roleId) {
-        this.roleId = roleId;
-    }
-
 }
 

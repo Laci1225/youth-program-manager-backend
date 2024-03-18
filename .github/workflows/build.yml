@@ -46,5 +46,5 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/YPM:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ypm:latest
         

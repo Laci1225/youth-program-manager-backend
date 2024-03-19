@@ -10,6 +10,9 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import static com.fleotadezuta.youthprogrammanager.constants.HttpConstants.APP_USER_ID;
+import static com.fleotadezuta.youthprogrammanager.constants.HttpConstants.APP_USER_TYPE;
+
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -27,13 +30,13 @@ public class UserDetailsFilter implements WebFilter {
             if (authentication != null) {
                 var auth0UserId = authentication.getName();
                 var appMetadata = auth0Service.getUserInfo(auth0UserId);
-                var userType = appMetadata.get("app_user_type");
-                var userId = appMetadata.get("app_user_id");
+                var userType = appMetadata.getApp_user_type();
+                var userId = appMetadata.getApp_user_id();
 
                 return webFilterChain.filter(serverWebExchange.mutate()
                         .request(serverWebExchange.getRequest().mutate()
-                                .header("X-app-user-type", userType)
-                                .header("X-app-user-id", userId)
+                                .header(APP_USER_TYPE, userType)
+                                .header(APP_USER_ID, userId)
                                 .build())
                         .build());
             }

@@ -37,19 +37,9 @@ public class ChildController {
 
     @PreAuthorize("hasAuthority('read:children')")
     @QueryMapping("getChildById")
-    public Mono<ChildWithParentsDto> getChildById(Authentication authentication, GraphQLContext context, @Argument String id) {
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
-            List<String> permissions = principal.getClaimAsStringList("permissions");
-            System.out.println("Permissions: " + permissions);
-            if (permissions.contains("read:children")) {
-                return childParentFacade.getChildById(new UserDetails(context), id)
-                        .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
-            } else {
-                return Mono.error(new IllegalArgumentException("User not authorized"));
-            }
-        } else {
-            return Mono.error(new IllegalArgumentException("User not authenticated"));
-        }
+    public Mono<ChildWithParentsDto> getChildById(GraphQLContext context, @Argument String id) {
+        return childParentFacade.getChildById(new UserDetails(context), id)
+                .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
     }
 
     @PreAuthorize("hasAuthority('create:children')")

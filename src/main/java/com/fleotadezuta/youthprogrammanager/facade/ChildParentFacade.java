@@ -1,7 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fleotadezuta.youthprogrammanager.config.Auth0Service;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
@@ -13,32 +12,26 @@ import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.*;
+
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ChildParentFacade {
 
-    @Value("${auth0.management.audience}")
-    private String audience;
-    @Value("${auth0.management.api.token}")
-    private String accessToken;
-
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
     private final ParentMapper parentMapper;
     private final ParentService parentService;
     private final ChildService childService;
+    private final Auth0Service auth0Service;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -137,23 +130,7 @@ public class ChildParentFacade {
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);
         }
-        return isOtherParentOfChildren(userDetails.getUserId(), id)
-                .filter(isOtherParent -> isOtherParent)
-                .flatMap(isOtherParent -> parentService.findById(id)
-                        .map(parentMapper::fromParentDtoToParentDocument)
-                        .flatMap(this::getChildDetails))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
-    }
-
-    private Mono<Boolean> isOtherParentOfChildren(String userId, String parentId) {
-        Flux<ChildDto> myChildren = childService.findByParentId(userId);
-        Flux<ChildDto> parentChildren = childService.findByParentId(parentId);
-
-        Mono<Long> totalCount = Flux.merge(myChildren, parentChildren).count();
-        Mono<Long> distinctCount = Flux.merge(myChildren, parentChildren).distinct().count();
-
-        return totalCount.zipWith(distinctCount, (total, distinct) -> !total.equals(distinct));
+        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     private Mono<ParentWithChildrenDto> getChildDetails(ParentDocument parent) {
@@ -187,50 +164,7 @@ public class ChildParentFacade {
                                 });
                     }
                 });
-        return parentDtoMono.doOnSuccess(parentDto -> {
-            OkHttpClient client = new OkHttpClient().newBuilder()
-                    .build();
-            MediaType mediaType = MediaType.parse("application/json");
-            RequestBody body = RequestBody.create(
-                    "{\"email\":\"" + parentDto.getEmail() + "\"," +
-                            "\"connection\":\"email\"," +
-                            "\"app_metadata\":{\"app_user_id\":\"" + parentDto.getId() + "\", \"app_user_type\":\"PARENT\"}," +
-                            "\"given_name\":\"" + parentDto.getGivenName() + "\"," +
-                            "\"family_name\":\"" + parentDto.getFamilyName() + "\"}",
-                    mediaType);
-            Request request = new Request.Builder()
-                    .url(audience + "users")
-                    .method("POST", body)
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Accept", "application/json")
-                    .addHeader("Authorization", "Bearer " + accessToken)
-                    .build();
-            try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful()) {
-                    String responseBody = Objects.requireNonNull(response.body()).string();
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    JsonNode jsonNode = objectMapper.readTree(responseBody);
-                    String userId = jsonNode.get("user_id").asText();
-                    log.error("User created with id: " + userId);
-                    RequestBody body2 = RequestBody.create(
-                            "{\"users\":[\"" + userId + "\"]}",
-                            mediaType);
-                    Request request2 = new Request.Builder()
-                            .url(audience + "roles/rol_Mjt9yu2PlPadWRn5/users")
-                            .method("POST", body2)
-                            .addHeader("Content-Type", "application/json")
-                            .addHeader("Authorization", "Bearer " + accessToken)
-                            .build();
-                    Response response2 = client.newCall(request2).execute();
-                    log.error(response2.body().string());
-                } else {
-                    System.err.println("Error: " + response.code() + ", " + response.message());
-                    System.err.println(response.body().string());
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return parentDtoMono.doOnSuccess(auth0Service::addAuth0Parent);
     }
 
 

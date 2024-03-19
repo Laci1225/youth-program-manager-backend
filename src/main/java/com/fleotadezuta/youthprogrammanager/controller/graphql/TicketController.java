@@ -29,36 +29,15 @@ public class TicketController {
     @PreAuthorize("hasAuthority('list:tickets')")
     @QueryMapping("getAllTickets")
     public Flux<TicketDto> getAllTickets(Authentication authentication, GraphQLContext context) {
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
-            List<String> permissions = principal.getClaimAsStringList("permissions");
-            System.out.println("Permissions: " + permissions);
-            if (permissions.contains("list:tickets")) {
-                return ticketChildTicketTypeFacade.getAllTickets(new UserDetails(context))
-                        .doOnComplete(() -> log.info("All ticket fetched successfully"));
-            } else {
-                return Flux.error(new IllegalArgumentException("User not authorized"));
-            }
-        } else {
-            return Flux.error(new IllegalArgumentException("User not authenticated"));
-        }
-
+        return ticketChildTicketTypeFacade.getAllTickets(new UserDetails(context))
+                .doOnComplete(() -> log.info("All ticket fetched successfully"));
     }
 
     @PreAuthorize("hasAuthority('read:tickets')")
     @QueryMapping("getTicketById")
     public Mono<TicketDto> getTicketById(Authentication authentication, @Argument String id) {
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt principal) {
-            List<String> permissions = principal.getClaimAsStringList("permissions");
-            System.out.println("Permissions: " + permissions);
-            if (permissions.contains("read:tickets")) {
-                return ticketChildTicketTypeFacade.getTicketById(id)
-                        .doOnSuccess(ticketDto -> log.info("Retrieved Ticket by ID: " + id));
-            } else {
-                return Mono.error(new IllegalArgumentException("User not authorized"));
-            }
-        } else {
-            return Mono.error(new IllegalArgumentException("User not authenticated"));
-        }
+        return ticketChildTicketTypeFacade.getTicketById(id)
+                .doOnSuccess(ticketDto -> log.info("Retrieved Ticket by ID: " + id));
     }
 
     @PreAuthorize("hasAuthority('create:tickets')")

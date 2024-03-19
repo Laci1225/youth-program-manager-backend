@@ -12,11 +12,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Service
@@ -39,6 +43,8 @@ public class EmployeeService {
     }
 
     public Mono<EmployeeDto> deleteEmployee(UserDetails userDetails, String id) {
+        Mono<String> auth0UserIdMono = ReactiveSecurityContextHolder.getContext()
+                .map(context -> context.getAuthentication().getName());
         if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
             return Mono.error(new RuntimeException("User not authorized to delete employee"));
         if (id.equals(userDetails.getUserId()))
@@ -61,19 +67,28 @@ public class EmployeeService {
                     }
                 }).flatMap(employee -> employeeRepository.deleteById(id).then(Mono.just(employee)))
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto)
-                .doOnSuccess((employeeDto -> {
+                .flatMap(employeeDto -> auth0UserIdMono.flatMap(s -> {
                     OkHttpClient client = new OkHttpClient().newBuilder().build();
                     MediaType mediaType = MediaType.parse("text/plain");
                     RequestBody body = RequestBody.create(mediaType, "");
-                    Request request = new Request.Builder()
-                            .url(audience + id)
-                            .method("DELETE", body)
-                            .addHeader("Authorization", "Bearer " + accessToken)
-                            .build();
+                    Request request = null;
                     try {
-                        Response response = client.newCall(request).execute();
-                    } catch (IOException e) {
+                        log.error(audience);
+                        request = new Request.Builder()
+                                .url(audience + "users/" + URLEncoder.encode(s, StandardCharsets.UTF_8.toString()))
+                                .method("DELETE", body)
+                                .addHeader("Authorization", "Bearer " + accessToken)
+                                .build();
+                    } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException(e);
+                    }
+                    try {
+                        log.error("s" + URLEncoder.encode(s, StandardCharsets.UTF_8.toString()));
+                        Response response = client.newCall(request).execute();
+                        log.error(response.body().string());
+                        return Mono.just(employeeDto);
+                    } catch (IOException e) {
+                        return Mono.error(new RuntimeException(e));
                     }
                 }));
     }
@@ -81,6 +96,7 @@ public class EmployeeService {
     public Mono<EmployeeDto> updateEmployee(UserDetails userDetails, EmployeeDto employeeDto) {
         if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
             return Mono.error(new RuntimeException("User not authorized to update employee"));
+        //todo  updatebe ne legyen típus
         return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }
@@ -138,8 +154,6 @@ public class EmployeeService {
     }
 
     public Mono<EmployeeDto> getEmployeeById(UserDetails userDetails, String id) {
-        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name()))
-            return Mono.error(new RuntimeException("User not authorized to get employee by id"));
         return employeeRepository.findById(id)
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }

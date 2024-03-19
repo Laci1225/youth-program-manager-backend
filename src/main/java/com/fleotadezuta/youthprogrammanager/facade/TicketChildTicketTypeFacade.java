@@ -33,7 +33,9 @@ public class TicketChildTicketTypeFacade {
     }
 
     public Flux<TicketDto> getAllTickets(UserDetails userDetails) {
-        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
+                || userDetails.getUserType().equals(Role.RECEPTIONIST.name())
+                || userDetails.getUserType().equals(Role.TEACHER.name())) {
             return ticketService.findAll()
                     .map(ticketMapper::fromTicketDtoToTicketDocument)
                     .flatMap(ticketDoc ->
@@ -114,9 +116,6 @@ public class TicketChildTicketTypeFacade {
     }
 
     public Mono<TicketDto> removeParticipation(UserDetails userDetails, String id, HistoryData historyData) {
-        if (!userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
-            return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "User not authorized to report participation"));
-        }
         return ticketService.findById(id)
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDocument -> {

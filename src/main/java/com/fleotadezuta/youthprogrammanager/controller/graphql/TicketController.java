@@ -11,14 +11,11 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 
 @Controller
 @AllArgsConstructor
@@ -28,14 +25,14 @@ public class TicketController {
 
     @PreAuthorize("hasAuthority('list:tickets')")
     @QueryMapping("getAllTickets")
-    public Flux<TicketDto> getAllTickets(Authentication authentication, GraphQLContext context) {
+    public Flux<TicketDto> getAllTickets(GraphQLContext context) {
         return ticketChildTicketTypeFacade.getAllTickets(new UserDetails(context))
                 .doOnComplete(() -> log.info("All ticket fetched successfully"));
     }
 
     @PreAuthorize("hasAuthority('read:tickets')")
     @QueryMapping("getTicketById")
-    public Mono<TicketDto> getTicketById(Authentication authentication, @Argument String id) {
+    public Mono<TicketDto> getTicketById(@Argument String id) {
         return ticketChildTicketTypeFacade.getTicketById(id)
                 .doOnSuccess(ticketDto -> log.info("Retrieved Ticket by ID: " + id));
     }
@@ -69,15 +66,15 @@ public class TicketController {
 
     @PreAuthorize("hasAuthority('create:ticket-participations')")
     @MutationMapping("reportParticipation")
-    public Mono<TicketDto> reportParticipation(GraphQLContext context, @Argument String id, @Argument @RequestBody HistoryData historyData) {
-        return ticketChildTicketTypeFacade.reportParticipation(new UserDetails(context), id, historyData)
+    public Mono<TicketDto> reportParticipation(@Argument String id, @Argument @RequestBody HistoryData historyData) {
+        return ticketChildTicketTypeFacade.reportParticipation(id, historyData)
                 .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
     }
 
     @PreAuthorize("hasAuthority('delete:ticket-participations')")
     @MutationMapping("removeParticipation")
-    public Mono<TicketDto> removeParticipation(GraphQLContext context, @Argument String id, @Argument @RequestBody HistoryData historyData) {
-        return ticketChildTicketTypeFacade.removeParticipation(new UserDetails(context), id, historyData)
+    public Mono<TicketDto> removeParticipation(@Argument String id, @Argument @RequestBody HistoryData historyData) {
+        return ticketChildTicketTypeFacade.removeParticipation(id, historyData)
                 .doOnSuccess(deletedTicket -> log.info("Participation reported with ID: " + deletedTicket.getId()));
 
     }

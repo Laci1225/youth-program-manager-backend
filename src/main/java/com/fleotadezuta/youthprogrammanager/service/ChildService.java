@@ -1,5 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.service;
 
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
@@ -25,7 +26,7 @@ public class ChildService {
     private final ChildMapper childMapper;
 
     public Flux<ChildDto> getAllChildren(UserDetails userDetails) {
-        if (userDetails.getUserType().equals("ADMIN")) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return childRepository.findAll()
                     .map(childMapper::fromChildDocumentToChildDto);
         } else {

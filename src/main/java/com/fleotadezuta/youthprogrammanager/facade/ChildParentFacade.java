@@ -1,6 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
 import com.fleotadezuta.youthprogrammanager.config.Auth0Service;
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
@@ -118,11 +119,11 @@ public class ChildParentFacade {
     }
 
     public Mono<ParentWithChildrenDto> getParentById(UserDetails userDetails, String id) {
-        if (id.equals("me") || userDetails.getUserId().equals(id)) {
+        if (userDetails.getUserId().equals(id)) {
             return parentService.findById(userDetails.getUserId())
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);
-        } else if (userDetails.getUserType().equals("ADMIN")) {
+        } else if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return parentService.findById(id)
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);

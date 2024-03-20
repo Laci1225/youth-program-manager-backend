@@ -53,8 +53,8 @@ public class ParentController {
 
     @PreAuthorize("hasAuthority('delete:parents')")
     @MutationMapping("deleteParent")
-    public Mono<ParentDto> deleteParent(GraphQLContext context, @Argument String id) {
-        return childParentFacade.deleteParent(new UserDetails(context), id)
+    public Mono<ParentDto> deleteParent(@Argument String id) {
+        return childParentFacade.deleteParent(id)
                 .doOnSuccess(deletedParent -> log.info("Deleted Parent with ID: " + deletedParent.getId()));
     }
 

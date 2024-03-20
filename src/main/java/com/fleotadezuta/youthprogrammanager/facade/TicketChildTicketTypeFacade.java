@@ -1,5 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
@@ -9,9 +10,7 @@ import com.fleotadezuta.youthprogrammanager.service.TicketService;
 import com.fleotadezuta.youthprogrammanager.service.TicketTypeService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -32,7 +31,7 @@ public class TicketChildTicketTypeFacade {
     }
 
     public Flux<TicketDto> getAllTickets(UserDetails userDetails) {
-        if (userDetails.getUserType().equals("ADMIN")) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return ticketService.findAll()
                     .map(ticketMapper::fromTicketDtoToTicketDocument)
                     .flatMap(ticketDoc ->
@@ -100,7 +99,7 @@ public class TicketChildTicketTypeFacade {
     }
 
 
-    public Mono<TicketDto> reportParticipation(UserDetails userDetails, String id, HistoryData historyData) {
+    public Mono<TicketDto> reportParticipation(String id, HistoryData historyData) {
         return ticketService.findById(id)
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDocument -> {
@@ -112,10 +111,7 @@ public class TicketChildTicketTypeFacade {
                 );
     }
 
-    public Mono<TicketDto> removeParticipation(UserDetails userDetails, String id, HistoryData historyData) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "User not authorized to report participation"));
-        }
+    public Mono<TicketDto> removeParticipation(String id, HistoryData historyData) {
         return ticketService.findById(id)
                 .map(ticketMapper::fromTicketDtoToTicketDocument)
                 .flatMap(ticketDocument -> {

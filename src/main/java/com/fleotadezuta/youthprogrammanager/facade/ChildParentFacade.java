@@ -75,15 +75,15 @@ public class ChildParentFacade {
                 .onErrorResume(Mono::error);
     }
 
-    public Mono<ParentDto> deleteParent(UserDetails userDetails, String id) {
+    public Mono<ParentDto> deleteParent(String id) {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
-                        .then(childService.removeParentFromChildren(userDetails, parent.getId()))
+                        .then(childService.removeParentFromChildren(parent.getId()))
                         .thenReturn(parent));
     }
 
 
-    public Mono<ChildWithParentsDto> getChildById(UserDetails userDetails, String id) {
+    public Mono<ChildWithParentsDto> getChildById(String id) {
 
         return childRepository.findById(id)
                 .flatMap(child -> {
@@ -92,9 +92,6 @@ public class ChildParentFacade {
                                     .map(RelativeParent::getId)
                                     .toList())
                             .orElse(Collections.emptyList());
-                    if (!userDetails.getUserType().equals("ADMIN") && !parentIds.contains(userDetails.getUserId())) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
-                    }
                     return parentService.findAllById(parentIds)
                             .collectMap(parentDto -> parentDto, parent -> child.getRelativeParents()
                                     .stream()

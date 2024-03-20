@@ -7,5 +7,5 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface TicketRepository extends ReactiveMongoRepository<TicketDocument, String> {
-    Flux<TicketDocument> findAllByChildId(String userId);
+    Flux<TicketDocument> findAllByChildId(String childId);
 }

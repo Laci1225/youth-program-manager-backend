@@ -34,4 +34,9 @@ public class TicketService {
     public Mono<Void> deleteById(String id) {
         return ticketRepository.deleteById(id);
     }
+
+    public Flux<TicketDto> findAllByChildId(String userId) {
+        return ticketRepository.findAllByChildId(userId)
+                .map(ticketMapper::fromTicketDocumentToTicketDto);
+    }
 }

@@ -1,5 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
@@ -29,12 +30,24 @@ public class TicketChildTicketTypeFacade {
         return ticketTypeService.findByName(name);
     }
 
-    public Flux<TicketDto> getAllTickets() {
-        return ticketService.findAll()
-                .map(ticketMapper::fromTicketDtoToTicketDocument)
-                .flatMap(ticketDoc ->
-                        getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
-                );
+    public Flux<TicketDto> getAllTickets(UserDetails userDetails) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
+            return ticketService.findAll()
+                    .map(ticketMapper::fromTicketDtoToTicketDocument)
+                    .flatMap(ticketDoc ->
+                            getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                    );
+        } else {
+            return childService.getAllChildren(userDetails)
+                    .map(ChildDto::getId)
+                    .collectList()
+                    .flatMapIterable(ids -> ids)
+                    .flatMap(ticketService::findAllByChildId)
+                    .map(ticketMapper::fromTicketDtoToTicketDocument)
+                    .flatMap(ticketDoc ->
+                            getTicketDtoWithChildAndTicketType(ticketDoc, ticketDoc.getChildId(), ticketDoc.getTicketTypeId())
+                    );
+        }
     }
 
     public Mono<TicketDto> getTicketById(String id) {

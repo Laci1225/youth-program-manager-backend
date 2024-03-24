@@ -21,6 +21,7 @@ import java.util.List;
 public class ParentDocument {
     @Id
     private String id;
+    private String email;
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;

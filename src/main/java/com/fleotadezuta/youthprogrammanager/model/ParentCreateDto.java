@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 public class ParentCreateDto {
+    private String email;
     private String familyName;
     private String givenName;
     private List<String> phoneNumbers;

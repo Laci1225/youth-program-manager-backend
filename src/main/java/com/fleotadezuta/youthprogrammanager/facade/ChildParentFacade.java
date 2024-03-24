@@ -1,5 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
+import com.fleotadezuta.youthprogrammanager.config.Auth0Service;
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
@@ -9,23 +11,28 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
 
+
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChildParentFacade {
+
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
     private final ParentMapper parentMapper;
     private final ParentService parentService;
     private final ChildService childService;
+    private final Auth0Service auth0Service;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -78,6 +85,7 @@ public class ChildParentFacade {
 
 
     public Mono<ChildWithParentsDto> getChildById(String id) {
+
         return childRepository.findById(id)
                 .flatMap(child -> {
                     List<String> parentIds = Optional.ofNullable(child.getRelativeParents())
@@ -110,22 +118,32 @@ public class ChildParentFacade {
                 });
     }
 
-    public Mono<ParentWithChildrenDto> getParentById(String id) {
-        return parentService.findById(id)
-                .map(parentMapper::fromParentDtoToParentDocument)
-                .flatMap(parent -> childService.findByParentId(parent.getId())
-                        .collectList()
-                        .map(children -> {
-                            var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
-                            List<ChildDto> childDtos = new ArrayList<>(children);
-                            parentWithChildrenDto.setChildDtos(childDtos);
-                            return parentWithChildrenDto;
-                        }));
+    public Mono<ParentWithChildrenDto> getParentById(UserDetails userDetails, String id) {
+        if (userDetails.getUserId().equals(id)) {
+            return parentService.findById(userDetails.getUserId())
+                    .map(parentMapper::fromParentDtoToParentDocument)
+                    .flatMap(this::getChildDetails);
+        } else if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
+            return parentService.findById(id)
+                    .map(parentMapper::fromParentDtoToParentDocument)
+                    .flatMap(this::getChildDetails);
+        }
+        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    private Mono<ParentWithChildrenDto> getChildDetails(ParentDocument parent) {
+        return childService.findByParentId(parent.getId())
+                .collectList()
+                .map(children -> {
+                    var parentWithChildrenDto = parentMapper.fromParentDocumentToParentWithChildrenDto(parent);
+                    List<ChildDto> childDtos = new ArrayList<>(children);
+                    parentWithChildrenDto.setChildDtos(childDtos);
+                    return parentWithChildrenDto;
+                });
     }
 
     public Mono<ParentDto> addParent(ParentCreateDto parentCreateDto) {
-        var parentDto = parentMapper.fromParentCreateDtoToParentDto(parentCreateDto);
-        return parentService.validateParent(parentDto)
+        var parentDtoMono = parentService.validateParent(parentMapper.fromParentCreateDtoToParentDto(parentCreateDto))
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .flatMap(parentService::save)
                 .flatMap(validatedParent -> {
@@ -144,11 +162,12 @@ public class ChildParentFacade {
                                 });
                     }
                 });
+        return parentDtoMono.doOnSuccess(auth0Service::addAuth0Parent);
     }
 
 
-    public Mono<ParentDto> updateParent(ParentUpdateDto parentUpdateDto) {
-        return getParentById(parentUpdateDto.getId())
+    public Mono<ParentDto> updateParent(UserDetails userDetails, ParentUpdateDto parentUpdateDto) {
+        return getParentById(userDetails, parentUpdateDto.getId())
                 .flatMap(previousParent -> {
                     var parentDto = parentMapper.fromParentUpdateDtoToParentDto(parentUpdateDto);
                     return Mono.just(parentDto)

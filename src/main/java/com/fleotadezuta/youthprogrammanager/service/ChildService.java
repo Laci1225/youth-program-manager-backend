@@ -1,8 +1,10 @@
 package com.fleotadezuta.youthprogrammanager.service;
 
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
+import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
@@ -23,9 +25,14 @@ public class ChildService {
     private final ChildRepository childRepository;
     private final ChildMapper childMapper;
 
-    public Flux<ChildDto> getAllChildren() {
-        return childRepository.findAll()
-                .map(childMapper::fromChildDocumentToChildDto);
+    public Flux<ChildDto> getAllChildren(UserDetails userDetails) {
+        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
+            return childRepository.findAll()
+                    .map(childMapper::fromChildDocumentToChildDto);
+        } else {
+            return childRepository.findChildDocumentsByRelativeParents_Id(userDetails.getUserId())
+                    .map(childMapper::fromChildDocumentToChildDto);
+        }
     }
 
     public Mono<ChildDto> deleteChild(String id) {

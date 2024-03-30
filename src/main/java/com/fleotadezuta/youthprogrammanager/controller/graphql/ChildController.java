@@ -11,14 +11,10 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 
 @Controller
@@ -37,8 +33,8 @@ public class ChildController {
 
     @PreAuthorize("hasAuthority('read:children')")
     @QueryMapping("getChildById")
-    public Mono<ChildWithParentsDto> getChildById(GraphQLContext context, @Argument String id) {
-        return childParentFacade.getChildById(new UserDetails(context), id)
+    public Mono<ChildWithParentsDto> getChildById(@Argument String id) {
+        return childParentFacade.getChildById(id)
                 .doOnSuccess(childDto -> log.info("Retrieved Child by ID: " + childDto));
     }
 
@@ -51,15 +47,15 @@ public class ChildController {
 
     @PreAuthorize("hasAuthority('update:children')")
     @MutationMapping("updateChild")
-    public Mono<ChildUpdateDto> updateChild(GraphQLContext context, @Valid @RequestBody @Argument ChildUpdateDto child) {
-        return childService.updateChild(new UserDetails(context), child)
+    public Mono<ChildUpdateDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
+        return childService.updateChild(child)
                 .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }
 
     @PreAuthorize("hasAuthority('delete:children')")
     @MutationMapping("deleteChild")
-    public Mono<ChildDto> deleteChild(GraphQLContext context, @Argument String id) {
-        return childService.deleteChild(new UserDetails(context), id)
+    public Mono<ChildDto> deleteChild(@Argument String id) {
+        return childService.deleteChild(id)
                 .doOnSuccess(deletedChild -> log.info("Deleted Child with ID: " + deletedChild.getId()));
     }
 

@@ -1,19 +1,18 @@
 package com.fleotadezuta.youthprogrammanager.facade;
 
+import com.fleotadezuta.youthprogrammanager.config.Auth0Service;
+import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.mapper.ParentMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
-import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
-import com.fleotadezuta.youthprogrammanager.service.EmployeeService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+
 
 @Service
 @Slf4j
@@ -32,7 +32,7 @@ public class ChildParentFacade {
     private final ParentMapper parentMapper;
     private final ParentService parentService;
     private final ChildService childService;
-    private final EmployeeService employeeService;
+    private final Auth0Service auth0Service;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -76,15 +76,15 @@ public class ChildParentFacade {
                 .onErrorResume(Mono::error);
     }
 
-    public Mono<ParentDto> deleteParent(UserDetails userDetails, String id) {
+    public Mono<ParentDto> deleteParent(String id) {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
-                        .then(childService.removeParentFromChildren(userDetails, parent.getId()))
+                        .then(childService.removeParentFromChildren(parent.getId()))
                         .thenReturn(parent));
     }
 
 
-    public Mono<ChildWithParentsDto> getChildById(UserDetails userDetails, String id) {
+    public Mono<ChildWithParentsDto> getChildById(String id) {
 
         return childRepository.findById(id)
                 .flatMap(child -> {
@@ -93,12 +93,6 @@ public class ChildParentFacade {
                                     .map(RelativeParent::getId)
                                     .toList())
                             .orElse(Collections.emptyList());
-                    if (!(userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
-                            || userDetails.getUserType().equals(Role.TEACHER.name())
-                            || userDetails.getUserType().equals(Role.RECEPTIONIST.name()))
-                            && !parentIds.contains(userDetails.getUserId())) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
-                    }
                     return parentService.findAllById(parentIds)
                             .collectMap(parentDto -> parentDto, parent -> child.getRelativeParents()
                                     .stream()
@@ -125,34 +119,16 @@ public class ChildParentFacade {
     }
 
     public Mono<ParentWithChildrenDto> getParentById(UserDetails userDetails, String id) {
-        if (id.equals("me") || userDetails.getUserId().equals(id)) {
+        if (userDetails.getUserId().equals(id)) {
             return parentService.findById(userDetails.getUserId())
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);
-        } else if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
-                || userDetails.getUserType().equals(Role.TEACHER.name())
-                || userDetails.getUserType().equals(Role.RECEPTIONIST.name())) {
+        } else if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
             return parentService.findById(id)
                     .map(parentMapper::fromParentDtoToParentDocument)
                     .flatMap(this::getChildDetails);
         }
-        return isOtherParentOfChildren(userDetails.getUserId(), id)
-                .filter(isOtherParent -> isOtherParent)
-                .flatMap(isOtherParent -> parentService.findById(id)
-                        .map(parentMapper::fromParentDtoToParentDocument)
-                        .flatMap(this::getChildDetails))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .onErrorResume(throwable -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
-    }
-
-    private Mono<Boolean> isOtherParentOfChildren(String userId, String parentId) {
-        Flux<ChildDto> myChildren = childService.findByParentId(userId);
-        Flux<ChildDto> parentChildren = childService.findByParentId(parentId);
-
-        Mono<Long> totalCount = Flux.merge(myChildren, parentChildren).count();
-        Mono<Long> distinctCount = Flux.merge(myChildren, parentChildren).distinct().count();
-
-        return totalCount.zipWith(distinctCount, (total, distinct) -> !total.equals(distinct));
+        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     private Mono<ParentWithChildrenDto> getChildDetails(ParentDocument parent) {
@@ -186,7 +162,7 @@ public class ChildParentFacade {
                                 });
                     }
                 });
-        return parentDtoMono.doOnSuccess(parentDto -> employeeService.CreateProps(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT));
+        return parentDtoMono.doOnSuccess(auth0Service::addAuth0Parent);
     }
 
 

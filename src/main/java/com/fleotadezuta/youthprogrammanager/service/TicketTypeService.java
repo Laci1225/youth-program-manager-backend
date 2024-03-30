@@ -2,12 +2,9 @@ package com.fleotadezuta.youthprogrammanager.service;
 
 import com.fleotadezuta.youthprogrammanager.mapper.TicketTypeMapper;
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
-import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.TicketTypeRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -17,46 +14,31 @@ public class TicketTypeService {
     private final TicketTypeMapper ticketTypeMapper;
     private final TicketTypeRepository ticketTypeRepository;
 
-    public Flux<TicketTypeDto> getAllTicketTypes(UserDetails userDetails) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not authorized to report participation"));
-        }
+    public Flux<TicketTypeDto> getAllTicketTypes() {
         return ticketTypeRepository.findAll()
                 .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> getTicketTypeById(UserDetails userDetails, String id) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not authorized to report participation"));
-        }
+    public Mono<TicketTypeDto> getTicketTypeById(String id) {
         return ticketTypeRepository.findById(id)
                 .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> addTicketType(UserDetails userDetails, TicketTypeDto ticketTypeDto) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not authorized to report participation"));
-        }
+    public Mono<TicketTypeDto> addTicketType(TicketTypeDto ticketTypeDto) {
         return Mono.just(ticketTypeDto)
                 .map(ticketTypeMapper::fromTicketTypeDtoToTicketTypeDocument)
                 .flatMap(ticketTypeRepository::save)
                 .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> deletedTicketType(UserDetails userDetails, String id) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not authorized to report participation"));
-        }
+    public Mono<TicketTypeDto> deletedTicketType(String id) {
         return ticketTypeRepository.findById(id)
                 .flatMap(ticketType -> ticketTypeRepository.deleteById(id)
                         .then(Mono.just(ticketType)))
                 .map(ticketTypeMapper::fromTicketTypeDocumentToTicketTypeDto);
     }
 
-    public Mono<TicketTypeDto> updateTicketType(UserDetails userDetails, String id, TicketTypeDto ticketTypeDto) {
-        if (!userDetails.getUserType().equals("ADMIN")) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not authorized to report participation"));
-        }
+    public Mono<TicketTypeDto> updateTicketType(String id, TicketTypeDto ticketTypeDto) {
         return Mono.just(ticketTypeDto)
                 .map(ticketTypeMapper::fromTicketTypeDtoToTicketTypeDocument)
                 .flatMap(ticketTypeDoc -> {

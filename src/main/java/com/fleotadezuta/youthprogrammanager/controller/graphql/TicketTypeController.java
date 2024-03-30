@@ -1,9 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.model.TicketTypeDto;
-import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.service.TicketTypeService;
-import graphql.GraphQLContext;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,36 +23,36 @@ public class TicketTypeController {
 
     @PreAuthorize("hasAuthority('list:ticket-types')")
     @QueryMapping("getAllTicketTypes")
-    public Flux<TicketTypeDto> getAllTicketTypes(GraphQLContext context) {
-        return ticketTypeService.getAllTicketTypes(new UserDetails(context))
+    public Flux<TicketTypeDto> getAllTicketTypes() {
+        return ticketTypeService.getAllTicketTypes()
                 .doOnNext(ticketTypeDto -> log.info(ticketTypeDto.getName()));
     }
 
     @PreAuthorize("hasAuthority('read:ticket-types')")
     @QueryMapping("getTicketTypeById")
-    public Mono<TicketTypeDto> getTicketTypeById(GraphQLContext context, @Argument String id) {
-        return ticketTypeService.getTicketTypeById(new UserDetails(context), id)
+    public Mono<TicketTypeDto> getTicketTypeById(@Argument String id) {
+        return ticketTypeService.getTicketTypeById(id)
                 .doOnSuccess(ticketTypeDto -> log.info("Retrieved Ticket type by ID: " + id));
     }
 
     @PreAuthorize("hasAuthority('create:ticket-types')")
     @MutationMapping("addTicketType")
-    public Mono<TicketTypeDto> addTicketType(GraphQLContext context, @Valid @RequestBody @Argument TicketTypeDto ticket) {
-        return ticketTypeService.addTicketType(new UserDetails(context), ticket)
+    public Mono<TicketTypeDto> addTicketType(@Valid @RequestBody @Argument TicketTypeDto ticket) {
+        return ticketTypeService.addTicketType(ticket)
                 .doOnSuccess(ticketTypeDto -> log.info("Added Ticket type with data: " + ticketTypeDto));
     }
 
     @PreAuthorize("hasAuthority('update:ticket-types')")
     @MutationMapping("updateTicketType")
-    public Mono<TicketTypeDto> updateTicketType(GraphQLContext context, @Argument String id, @Valid @RequestBody @Argument TicketTypeDto ticket) {
-        return ticketTypeService.updateTicketType(new UserDetails(context), id, ticket)
+    public Mono<TicketTypeDto> updateTicketType(@Argument String id, @Valid @RequestBody @Argument TicketTypeDto ticket) {
+        return ticketTypeService.updateTicketType(id, ticket)
                 .doOnSuccess(ticketTypeDto -> log.info("Updated Ticket type with ID: " + id));
     }
 
     @PreAuthorize("hasAuthority('delete:ticket-types')")
     @MutationMapping("deleteTicketType")
-    public Mono<TicketTypeDto> deletedTicketType(GraphQLContext context, @Argument String id) {
-        return ticketTypeService.deletedTicketType(new UserDetails(context), id)
+    public Mono<TicketTypeDto> deletedTicketType(@Argument String id) {
+        return ticketTypeService.deletedTicketType(id)
                 .doOnSuccess(deletedTicketType -> log.info("Deleted Ticket type with ID: " + deletedTicketType.getId()));
     }
 

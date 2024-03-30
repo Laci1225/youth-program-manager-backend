@@ -31,7 +31,7 @@ public class ParentController {
     }
 
     @PreAuthorize("hasAuthority('read:parents')")
-    @QueryMapping("getParentById") //todo other parent should be visible if same child
+    @QueryMapping("getParentById")
     public Mono<ParentWithChildrenDto> getParentById(GraphQLContext context, @Argument String id) {
         return childParentFacade.getParentById(new UserDetails(context), id)
                 .doOnSuccess(parentDto -> log.info("Retrieved Parent: " + parentDto));
@@ -53,8 +53,8 @@ public class ParentController {
 
     @PreAuthorize("hasAuthority('delete:parents')")
     @MutationMapping("deleteParent")
-    public Mono<ParentDto> deleteParent(GraphQLContext context, @Argument String id) {
-        return childParentFacade.deleteParent(new UserDetails(context), id)
+    public Mono<ParentDto> deleteParent(@Argument String id) {
+        return childParentFacade.deleteParent(id)
                 .doOnSuccess(deletedParent -> log.info("Deleted Parent with ID: " + deletedParent.getId()));
     }
 

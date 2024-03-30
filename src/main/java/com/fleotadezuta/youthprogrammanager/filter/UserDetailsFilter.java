@@ -30,8 +30,8 @@ public class UserDetailsFilter implements WebFilter {
             if (authentication != null) {
                 var auth0UserId = authentication.getName();
                 var appMetadata = auth0Service.getUserInfo(auth0UserId);
-                var userType = appMetadata.getApp_user_type();
-                var userId = appMetadata.getApp_user_id();
+                var userType = appMetadata.appUserType();
+                var userId = appMetadata.appUserId();
 
                 return webFilterChain.filter(serverWebExchange.mutate()
                         .request(serverWebExchange.getRequest().mutate()

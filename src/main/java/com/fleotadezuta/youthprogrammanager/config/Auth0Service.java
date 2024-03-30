@@ -1,8 +1,11 @@
 package com.fleotadezuta.youthprogrammanager.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fleotadezuta.youthprogrammanager.model.AppMetadata;
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
+import com.fleotadezuta.youthprogrammanager.model.UserData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +26,8 @@ public class Auth0Service {
     private String audience;
     @Value("${auth0.management.api.token}")
     private String accessToken;
+    @Value("${auth0.management.roles.parent}")
+    private String parent;
     public static final OkHttpClient client = new OkHttpClient();
 
     public AppMetadata getUserInfo(String userId) {
@@ -32,7 +38,6 @@ public class Auth0Service {
                 .build();
         try {
             Response response = client.newCall(request).execute();
-            System.out.println(response);
             if (response.isSuccessful()) {
                 var responseBody = new ObjectMapper().readValue(response.body().string(), Map.class);
                 return new ObjectMapper().convertValue(responseBody.get("app_metadata"), AppMetadata.class);
@@ -45,13 +50,20 @@ public class Auth0Service {
 
     public void addAuth0Parent(ParentDto parentDto) {
         MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(
-                "{\"email\":\"" + parentDto.getEmail() + "\"," +
-                        "\"connection\":\"email\"," +
-                        "\"app_metadata\":{\"app_user_id\":\"" + parentDto.getId() + "\", \"app_user_type\":\"PARENT\"}," +
-                        "\"given_name\":\"" + parentDto.getGivenName() + "\"," +
-                        "\"family_name\":\"" + parentDto.getFamilyName() + "\"}",
-                mediaType);
+        UserData userData = new UserData(
+                parentDto.getEmail(),
+                new AppMetadata(parentDto.getId(), "PARENT"),
+                parentDto.getGivenName(),
+                parentDto.getFamilyName(),
+                "email");
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    new ObjectMapper().writeValueAsString(userData),
+                    mediaType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         Request request = new Request.Builder()
                 .url(audience + "users")
                 .method("POST", body)
@@ -70,7 +82,7 @@ public class Auth0Service {
                         "{\"users\":[\"" + userId + "\"]}",
                         mediaType);
                 Request request2 = new Request.Builder()
-                        .url(audience + "roles/rol_Mjt9yu2PlPadWRn5/users")
+                        .url(audience + "roles/" + parent + "/users")
                         .method("POST", body2)
                         .addHeader("Content-Type", "application/json")
                         .addHeader("Authorization", "Bearer " + accessToken)
@@ -78,8 +90,8 @@ public class Auth0Service {
                 Response response2 = client.newCall(request2).execute();
                 log.error(response2.body().string());
             } else {
-                System.err.println("Error: " + response.code() + ", " + response.message());
-                System.err.println(response.body().string());
+                log.error("Error: " + response.code() + ", " + response.message());
+                log.error(response.body().string());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

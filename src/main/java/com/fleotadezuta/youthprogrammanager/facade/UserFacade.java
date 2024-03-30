@@ -20,8 +20,8 @@ public class UserFacade {
                     var authentication = context.getAuthentication();
                     var auth0UserId = authentication.getName();
                     var appMetadata = auth0Service.getUserInfo(auth0UserId);
-                    var userType = appMetadata.get("app_user_type");
-                    var userId = appMetadata.get("app_user_id");
+                    var userType = appMetadata.appUserType();
+                    var userId = appMetadata.appUserId();
                     return new CurrentUserDto(Role.valueOf(userType), userId);
                 });
     }

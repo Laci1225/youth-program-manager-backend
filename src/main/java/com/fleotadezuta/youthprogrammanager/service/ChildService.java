@@ -7,7 +7,6 @@ import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
-import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,10 +49,6 @@ public class ChildService {
                 .stream()
                 .map(RelativeParent::getId)
                 .toList();
-        if (!parentIds.contains(userDetails.getUserId())
-                && !userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
-            return Mono.error(new ResponseStatusException(FORBIDDEN, "User not authorized to delete child"));
-        }
         Set<String> uniqueParentIds = new HashSet<>(parentIds);
         if (parentIds.size() != uniqueParentIds.size()) {
             return Mono.error(new IllegalArgumentException("Relative parent IDs are not unique"));

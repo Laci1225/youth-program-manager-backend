@@ -2,7 +2,6 @@ package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.facade.ChildParentFacade;
 import com.fleotadezuta.youthprogrammanager.model.*;
-import graphql.GraphQLContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +31,8 @@ public class ParentController {
 
     @PreAuthorize("hasAuthority('read:parents')")
     @QueryMapping("getParentById")
-    public Mono<ParentWithChildrenDto> getParentById(GraphQLContext context, @Argument String id) {
-        return childParentFacade.getParentById(new UserDetails(context), id)
+    public Mono<ParentWithChildrenDto> getParentById(@Argument String id) {
+        return childParentFacade.getParentById(id)
                 .doOnSuccess(parentDto -> log.info("Retrieved Parent: " + parentDto));
     }
 
@@ -46,8 +45,8 @@ public class ParentController {
 
     @PreAuthorize("hasAuthority('update:parents')")
     @MutationMapping("updateParent")
-    public Mono<ParentDto> updateParent(GraphQLContext context, @Valid @RequestBody @Argument ParentUpdateDto parent) {
-        return childParentFacade.updateParent(new UserDetails(context), parent)
+    public Mono<ParentDto> updateParent(@Valid @RequestBody @Argument ParentUpdateDto parent) {
+        return childParentFacade.updateParent(parent)
                 .doOnSuccess(parentDto -> log.info("Updated Parent: " + parentDto));
     }
 

@@ -1,6 +1,7 @@
 package com.fleotadezuta.youthprogrammanager.controller.graphql;
 
 import com.fleotadezuta.youthprogrammanager.model.EmployeeDto;
+import com.fleotadezuta.youthprogrammanager.model.EmployeeUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.service.EmployeeService;
 import graphql.GraphQLContext;
@@ -24,29 +25,29 @@ public class EmployeeController {
 
     @PreAuthorize("hasAuthority('list:employees')")
     @QueryMapping("getAllEmployees")
-    public Flux<EmployeeDto> getAllEmployees(GraphQLContext context) {
-        return employeeService.getAllEmployees(new UserDetails(context))
+    public Flux<EmployeeDto> getAllEmployees() {
+        return employeeService.getAllEmployees()
                 .doOnComplete(() -> log.info("All employees fetched successfully"));
     }
 
     @PreAuthorize("hasAuthority('read:employees')")
     @QueryMapping("getEmployeeById")
-    public Mono<EmployeeDto> getEmployeeById(GraphQLContext context, @Argument String id) {
-        return employeeService.getEmployeeById(new UserDetails(context), id)
+    public Mono<EmployeeDto> getEmployeeById(@Argument String id) {
+        return employeeService.getEmployeeById(id)
                 .doOnSuccess(employeeDto -> log.info("Retrieved Employee: " + employeeDto));
     }
 
     @PreAuthorize("hasAuthority('create:employees')")
     @MutationMapping("addEmployee")
-    public Mono<EmployeeDto> addEmployee(GraphQLContext context, @Valid @RequestBody @Argument EmployeeDto employee) {
-        return employeeService.addEmployee(new UserDetails(context), employee)
+    public Mono<EmployeeDto> addEmployee(@Valid @RequestBody @Argument EmployeeDto employee) {
+        return employeeService.addEmployee(employee)
                 .doOnSuccess(employeeDto -> log.info("Added Employee with data: " + employeeDto));
     }
 
     @PreAuthorize("hasAuthority('update:employees')")
     @MutationMapping("updateEmployee")
-    public Mono<EmployeeDto> updateEmployee(GraphQLContext context, @Valid @RequestBody @Argument EmployeeDto employee) {
-        return employeeService.updateEmployee(new UserDetails(context), employee)
+    public Mono<EmployeeDto> updateEmployee(@Valid @RequestBody @Argument EmployeeUpdateDto employee) {
+        return employeeService.updateEmployee(employee)
                 .doOnSuccess(employeeDto -> log.info("Updated Employee: " + employeeDto));
     }
 

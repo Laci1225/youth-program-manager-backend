@@ -1,12 +1,12 @@
 package com.fleotadezuta.youthprogrammanager.service;
 
-import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
+import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

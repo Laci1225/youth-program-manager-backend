@@ -6,7 +6,6 @@ import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
-import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.fleotadezuta.youthprogrammanager.constants.Employee.EMPLOYEE_USER_TYPES;
+
 
 @Service
 @AllArgsConstructor
@@ -26,9 +27,7 @@ public class ChildService {
     private final ChildMapper childMapper;
 
     public Flux<ChildDto> getAllChildren(UserDetails userDetails) {
-        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
-                || userDetails.getUserType().equals(Role.RECEPTIONIST.name())
-                || userDetails.getUserType().equals(Role.TEACHER.name())) {
+        if (EMPLOYEE_USER_TYPES.contains(userDetails.getUserType())) {
             return childRepository.findAll()
                     .map(childMapper::fromChildDocumentToChildDto);
         } else {

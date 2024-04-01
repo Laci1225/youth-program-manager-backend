@@ -152,7 +152,7 @@ public class ChildParentFacade {
                                             .thenReturn(validatedParent);
                                 });
                     }
-                }).doOnNext(parentDto -> auth0Service.createUsers(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT));
+                }).doOnNext(parentDto -> auth0Service.createUser(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT));
     }
 
 

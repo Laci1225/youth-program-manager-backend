@@ -53,7 +53,7 @@ public class EmployeeService {
 
     public Mono<EmployeeDto> addEmployee(EmployeeDto employeeDto) {
         return employeeRepository.save(employeeMapper.fromEmployeeDtoToEmployeeDocument(employeeDto))
-                .doOnSuccess((employeeDocument) -> auth0Service.createUsers(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), employeeDocument.getType()))
+                .doOnSuccess((employeeDocument) -> auth0Service.createUser(employeeDocument.getEmail(), employeeDocument.getId(), employeeDocument.getGivenName(), employeeDocument.getFamilyName(), employeeDocument.getType()))
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto);
     }
 

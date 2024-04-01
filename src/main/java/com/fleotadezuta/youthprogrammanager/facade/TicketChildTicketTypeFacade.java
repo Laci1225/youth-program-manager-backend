@@ -3,7 +3,6 @@ package com.fleotadezuta.youthprogrammanager.facade;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.HistoryData;
-import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
 import com.fleotadezuta.youthprogrammanager.service.TicketService;
@@ -15,6 +14,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+
+import static com.fleotadezuta.youthprogrammanager.constants.Employee.EMPLOYEE_USER_TYPES;
 
 @Service
 @AllArgsConstructor
@@ -31,9 +32,7 @@ public class TicketChildTicketTypeFacade {
     }
 
     public Flux<TicketDto> getAllTickets(UserDetails userDetails) {
-        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())
-                || userDetails.getUserType().equals(Role.RECEPTIONIST.name())
-                || userDetails.getUserType().equals(Role.TEACHER.name())) {
+        if (EMPLOYEE_USER_TYPES.contains(userDetails.getUserType())) {
             return ticketService.findAll()
                     .map(ticketMapper::fromTicketDtoToTicketDocument)
                     .flatMap(ticketDoc ->

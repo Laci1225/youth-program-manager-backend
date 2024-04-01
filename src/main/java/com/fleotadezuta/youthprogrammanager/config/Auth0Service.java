@@ -48,7 +48,7 @@ public class Auth0Service {
         return new AppMetadata();
     }
 
-    public void createUsers(String email, String id, String givenName, String familyName, Role role) {
+    public void createUser(String email, String id, String givenName, String familyName, Role role) {
         MediaType mediaType = MediaType.parse("application/json");
         UserData userData = new UserData(
                 email,

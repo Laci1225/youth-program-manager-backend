@@ -1,6 +1,5 @@
 package com.fleotadezuta.youthprogrammanager.service;
 
-import com.fleotadezuta.youthprogrammanager.constants.Role;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
@@ -17,6 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.fleotadezuta.youthprogrammanager.constants.Employee.EMPLOYEE_USER_TYPES;
+
 
 @Service
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class ChildService {
     private final ChildMapper childMapper;
 
     public Flux<ChildDto> getAllChildren(UserDetails userDetails) {
-        if (userDetails.getUserType().equals(Role.ADMINISTRATOR.name())) {
+        if (EMPLOYEE_USER_TYPES.contains(userDetails.getUserType())) {
             return childRepository.findAll()
                     .map(childMapper::fromChildDocumentToChildDto);
         } else {

@@ -50,7 +50,7 @@ public class TicketTypeController {
     }
 
     @PreAuthorize("hasAuthority('delete:ticket-types')")
-    @MutationMapping("deletedTicketType")
+    @MutationMapping("deleteTicketType")
     public Mono<TicketTypeDto> deletedTicketType(@Argument String id) {
         return ticketTypeService.deletedTicketType(id)
                 .doOnSuccess(deletedTicketType -> log.info("Deleted Ticket type with ID: " + deletedTicketType.getId()));

@@ -1,4 +1,13 @@
+FROM eclipse-temurin:21-jdk as builder
+WORKDIR /opt/app
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+COPY ./src ./src
+RUN ./mvnw clean install -DskipTests
+
 FROM eclipse-temurin:21-jdk
-WORKDIR /app
-COPY ./target/youth-program-manager-0.0.1-SNAPSHOT.jar /app.jar
-CMD ["java", "-jar", "/app.jar"]
+WORKDIR /opt/app
+EXPOSE 8080
+COPY --from=builder /opt/app/target/*.jar /opt/app/*.jar
+ENTRYPOINT ["java","-Dspring.profiles.active=prod", "-jar", "/opt/app/*.jar" ]

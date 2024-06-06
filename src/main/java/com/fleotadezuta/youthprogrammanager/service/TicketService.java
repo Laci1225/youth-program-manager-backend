@@ -23,7 +23,8 @@ public class TicketService {
 
     public Mono<TicketDto> findById(String id) {
         return ticketRepository.findById(id)
-                .map(ticketMapper::fromTicketDocumentToTicketDto);
+                .map(ticketMapper::fromTicketDocumentToTicketDto)
+                .switchIfEmpty(Mono.error(new RuntimeException("Ticket not found")));
     }
 
     public Mono<TicketDto> save(TicketDocument ticketDocument) {

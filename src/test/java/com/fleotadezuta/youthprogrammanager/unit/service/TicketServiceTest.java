@@ -1,5 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.unit.service;
 
+import com.fleotadezuta.youthprogrammanager.fixtures.service.TicketFixture;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
 import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 
 import java.util.List;
@@ -37,22 +39,21 @@ public class TicketServiceTest {
     @Test
     void findAllShouldReturnAllTickets() {
         // Arrange
-        var ticketDocumentList = List.of(new TicketDocument(), new TicketDocument());
-        var ticketDtoList = List.of(new TicketDto(), new TicketDto());
-        when(ticketRepository.findAll()).thenReturn(Flux.fromIterable(ticketDocumentList));
+        when(ticketRepository.findAll()).thenReturn(Flux.fromIterable(TicketFixture.getTicketDocumentList()));
         when(ticketMapper.fromTicketDocumentToTicketDto(any(TicketDocument.class)))
                 .thenAnswer(invocation -> {
                     TicketDocument document = invocation.getArgument(0);
-                    int index = ticketDocumentList.indexOf(document);
-                    return ticketDtoList.get(index);
+                    int index = TicketFixture.getTicketDocumentList().indexOf(document);
+                    return TicketFixture.getTicketDtoList().get(index);
                 });
 
         // Act
         var ticketFlux = ticketService.findAll();
 
         // Assert
-        var ticketDtos = ticketFlux.collectList().block();
-        assertThat(ticketDtos).usingRecursiveComparison().isEqualTo(ticketDtoList);
+        StepVerifier.create(ticketFlux)
+                .expectNextSequence(TicketFixture.getTicketDtoList())
+                .verifyComplete();
         verify(ticketRepository, times(1)).findAll();
         verifyNoMoreInteractions(ticketRepository);
     }
@@ -60,18 +61,15 @@ public class TicketServiceTest {
     @Test
     void findByIdShouldReturnTicket() {
         // Arrange
-        var ticketDocument = new TicketDocument();
-        var ticketDto = new TicketDto();
-        when(ticketRepository.findById(anyString())).thenReturn(Mono.just(ticketDocument));
+        when(ticketRepository.findById(anyString())).thenReturn(Mono.just(TicketFixture.getTicketDocument()));
         when(ticketMapper.fromTicketDocumentToTicketDto(any(TicketDocument.class)))
-                .thenReturn(ticketDto);
+                .thenReturn(TicketFixture.getTicketDto());
 
         // Act
         var ticketMono = ticketService.findById("1234");
 
         // Assert
-        var ticket = ticketMono.block();
-        assertThat(ticket).usingRecursiveComparison().isEqualTo(ticketDto);
+        assertThat(ticketMono.block()).usingRecursiveComparison().isEqualTo(TicketFixture.getTicketDto());
         verify(ticketRepository, times(1)).findById(anyString());
         verifyNoMoreInteractions(ticketRepository);
     }
@@ -79,18 +77,15 @@ public class TicketServiceTest {
     @Test
     void saveShouldSaveTicket() {
         // Arrange
-        var ticketDocument = new TicketDocument();
-        var ticketDto = new TicketDto();
-        when(ticketRepository.save(any(TicketDocument.class))).thenReturn(Mono.just(ticketDocument));
+        when(ticketRepository.save(any(TicketDocument.class))).thenReturn(Mono.just(TicketFixture.getTicketDocument()));
         when(ticketMapper.fromTicketDocumentToTicketDto(any(TicketDocument.class)))
-                .thenReturn(ticketDto);
+                .thenReturn(TicketFixture.getTicketDto());
 
         // Act
-        var ticketMono = ticketService.save(ticketDocument);
+        var ticketMono = ticketService.save(TicketFixture.getTicketDocument());
 
         // Assert
-        var ticket = ticketMono.block();
-        assertThat(ticket).usingRecursiveComparison().isEqualTo(ticketDto);
+        assertThat(ticketMono.block()).usingRecursiveComparison().isEqualTo(TicketFixture.getTicketDto());
         verify(ticketRepository, times(1)).save(any(TicketDocument.class));
         verifyNoMoreInteractions(ticketRepository);
     }
@@ -112,22 +107,88 @@ public class TicketServiceTest {
     @Test
     void findAllByChildIdShouldReturnAllTicketsByChildId() {
         // Arrange
-        var ticketDocumentList = List.of(new TicketDocument(), new TicketDocument());
-        var ticketDtoList = List.of(new TicketDto(), new TicketDto());
-        when(ticketRepository.findAllByChildId(anyString())).thenReturn(Flux.fromIterable(ticketDocumentList));
+        when(ticketRepository.findAllByChildId(anyString())).thenReturn(Flux.fromIterable(TicketFixture.getTicketDocumentList()));
         when(ticketMapper.fromTicketDocumentToTicketDto(any(TicketDocument.class)))
                 .thenAnswer(invocation -> {
                     TicketDocument document = invocation.getArgument(0);
-                    int index = ticketDocumentList.indexOf(document);
-                    return ticketDtoList.get(index);
+                    int index = TicketFixture.getTicketDocumentList().indexOf(document);
+                    return TicketFixture.getTicketDtoList().get(index);
                 });
 
         // Act
         var ticketFlux = ticketService.findAllByChildId("1234");
 
         // Assert
-        var ticketDtos = ticketFlux.collectList().block();
-        assertThat(ticketDtos).usingRecursiveComparison().isEqualTo(ticketDtoList);
+        assertThat(ticketFlux.collectList().block()).usingRecursiveComparison().isEqualTo(TicketFixture.getTicketDtoList());
+        verify(ticketRepository, times(1)).findAllByChildId(anyString());
+        verifyNoMoreInteractions(ticketRepository);
+    }
+
+    @Test
+    void findByIdShouldFailWhenTicketNotFound() {
+        // Arrange
+        when(ticketRepository.findById(anyString())).thenReturn(Mono.empty());
+
+        // Act
+        var ticketMono = ticketService.findById("wrong_id");
+
+        // Assert
+        StepVerifier.create(ticketMono)
+                //todo .expectError(TicketNotFoundException.class)
+                .expectErrorMessage("Ticket not found")
+                .verify();
+
+        verify(ticketRepository, times(1)).findById(anyString());
+        verifyNoMoreInteractions(ticketRepository);
+    }
+
+    @Test
+    void saveShouldFailWhenTicketDataIsInvalid() {
+        // Arrange
+        TicketDocument invalidTicket = TicketFixture.getTicketDocument();
+        invalidTicket.setId(null); // Making it invalid
+
+        when(ticketRepository.save(any(TicketDocument.class))).thenReturn(Mono.error(new IllegalArgumentException("Invalid ticket data")));
+
+        // Act
+        var ticketMono = ticketService.save(invalidTicket);
+
+        // Assert
+        StepVerifier.create(ticketMono)
+                .expectErrorMessage("Invalid ticket data")
+                .verify();
+        verify(ticketRepository, times(1)).save(any(TicketDocument.class));
+        verifyNoMoreInteractions(ticketRepository);
+    }
+
+    @Test
+    void deleteByIdShouldFailWhenTicketNotFound() {
+        // Arrange
+        when(ticketRepository.deleteById(anyString())).thenReturn(Mono.error(new IllegalArgumentException("Ticket not found")));
+
+        // Act
+        var voidMono = ticketService.deleteById("wrong_id");
+
+        // Assert
+        StepVerifier.create(voidMono)
+                .expectErrorMessage("Ticket not found")
+                .verify();
+        verify(ticketRepository, times(1)).deleteById(anyString());
+        verifyNoMoreInteractions(ticketRepository);
+    }
+
+    @Test
+    void findAllByChildIdShouldFailWhenChildIdNotFound() {
+        // Arrange
+        when(ticketRepository.findAllByChildId(anyString())).thenReturn(Flux.error(new IllegalArgumentException("Child ID not found")));
+
+        // Act
+        var ticketFlux = ticketService.findAllByChildId("wrong_child_id");
+
+        // Assert
+        StepVerifier.create(ticketFlux)
+                .expectErrorMessage("Child ID not found")
+                .verify();
         verify(ticketRepository, times(1)).findAllByChildId(anyString());
         verifyNoMoreInteractions(ticketRepository);
     }

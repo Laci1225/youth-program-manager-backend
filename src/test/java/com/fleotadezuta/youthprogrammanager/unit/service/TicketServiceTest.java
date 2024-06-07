@@ -2,7 +2,6 @@ package com.fleotadezuta.youthprogrammanager.unit.service;
 
 import com.fleotadezuta.youthprogrammanager.fixtures.service.TicketFixture;
 import com.fleotadezuta.youthprogrammanager.mapper.TicketMapper;
-import com.fleotadezuta.youthprogrammanager.model.TicketDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.TicketDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.TicketRepository;
 import com.fleotadezuta.youthprogrammanager.service.TicketService;
@@ -16,10 +15,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;

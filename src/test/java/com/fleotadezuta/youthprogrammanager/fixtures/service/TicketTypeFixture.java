@@ -38,23 +38,19 @@ public class TicketTypeFixture {
                 .build();
     }
 
-    public static TicketTypeDocument getTicketTypeDocument(boolean withId) {
-        var ticketTypeDocument = TicketTypeDocument.builder()
+    public static TicketTypeDocument getTicketTypeDocumentWithoutId() {
+        return TicketTypeDocument.builder()
                 .name(NAME)
                 .description(DESCRIPTION)
                 .price(PRICE)
                 .numberOfParticipation(NUMBER_OF_PARTICIPATION)
                 .standardValidityPeriod(STANDARD_VALIDITY_PERIOD)
                 .build();
-        if (withId) {
-            ticketTypeDocument.setId(ID);
-        }
-        return ticketTypeDocument;
     }
 
-    public static TicketTypeDocument getTicketTypeDocument(String id) {
+    public static TicketTypeDocument getTicketTypeDocument() {
         return TicketTypeDocument.builder()
-                .id(id)
+                .id(ID)
                 .name(NAME)
                 .description(DESCRIPTION)
                 .price(PRICE)
@@ -71,7 +67,7 @@ public class TicketTypeFixture {
 
     public static List<TicketTypeDocument> getTicketTypeDocumentList() {
         var list = new ArrayList<TicketTypeDocument>();
-        list.add(getTicketTypeDocument(true));
+        list.add(getTicketTypeDocument());
         return list;
     }
 }

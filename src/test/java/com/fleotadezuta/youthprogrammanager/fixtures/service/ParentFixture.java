@@ -2,6 +2,7 @@ package com.fleotadezuta.youthprogrammanager.fixtures.service;
 
 import com.fleotadezuta.youthprogrammanager.model.ParentDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
+import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -99,5 +100,12 @@ public class ParentFixture {
         var list = new ArrayList<ParentDocument>();
         list.add(getParentDocument());
         return list;
+    }
+
+    public static RelativeParent getRelativeParent() {
+        return RelativeParent.builder()
+                .id(ID)
+                .isEmergencyContact(true)
+                .build();
     }
 }

@@ -57,6 +57,28 @@ public class ParentServiceTest {
     }
 
     @Test
+    public void validateParentShouldThrowExceptionWhenSameNumbersAreGiven() throws Exception {
+        // Arrange
+        var parentDto = ParentFixture.getParentDtoWithIdenticalNames();
+
+        // Act & Assert
+        assertThatThrownBy(() -> parentService.validateParent(parentDto).block())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Duplicate phone numbers are not allowed");
+    }
+
+    @Test
+    void validateParentShouldThrowExceptionWhenPhoneNumbersAreNull() {
+        // Arrange
+        var parentDto = ParentFixture.getParentDtoWithOutValidPhoneNumbers();
+
+        // Act & Assert
+        assertThatThrownBy(() -> parentService.validateParent(parentDto).block())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Phone number list is empty");
+    }
+
+    @Test
     void findByFullNameShouldReturnParentsByName() {
         // Arrange
         when(parentRepository.findByFullName(anyString()))

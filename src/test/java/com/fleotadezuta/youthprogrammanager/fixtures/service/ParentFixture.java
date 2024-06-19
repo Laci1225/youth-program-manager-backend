@@ -65,6 +65,28 @@ public class ParentFixture {
                 .build();
     }
 
+    public static ParentDto getParentDtoWithOutValidPhoneNumbers() {
+        return ParentDto.builder()
+                .id(ID)
+                .email(EMAIL)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .phoneNumbers(null)
+                .address(ADDRESS)
+                .build();
+    }
+
+    public static ParentDto getParentDtoWithIdenticalNames() {
+        return ParentDto.builder()
+                .id(ID)
+                .email(EMAIL)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .phoneNumbers(List.of(VALID_PHONE_NUMBERS.get(0), VALID_PHONE_NUMBERS.get(0)))
+                .address(ADDRESS)
+                .build();
+    }
+
     public static ParentDocument getParentDocument() {
         return ParentDocument.builder()
                 .id(ID)
@@ -108,4 +130,6 @@ public class ParentFixture {
                 .isEmergencyContact(true)
                 .build();
     }
+
+
 }

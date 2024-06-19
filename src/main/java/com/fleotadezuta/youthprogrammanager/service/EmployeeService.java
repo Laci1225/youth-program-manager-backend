@@ -27,17 +27,18 @@ public class EmployeeService {
     }
 
     public Mono<EmployeeDto> deleteEmployee(UserDetails userDetails, String id) {
-        Mono<String> auth0UserIdMono = ReactiveSecurityContextHolder.getContext()
-                .map(context -> context.getAuthentication().getName());
+        /*Mono<String> myAuth0UserIdMono = ReactiveSecurityContextHolder.getContext()
+                .map(context -> context.getAuthentication().getName());*/
+        //delete user by external id from auth0
         if (id.equals(userDetails.getUserId()))
-            return Mono.error(new RuntimeException("Cannot delete self"));
+            return Mono.error(new IllegalArgumentException("Cannot delete self"));
         return employeeRepository.findById(id)
                 .flatMap(employee -> employeeRepository.deleteById(id).then(Mono.just(employee)))
                 .map(employeeMapper::fromEmployeeDocumentToEmployeeDto)
-                .flatMap(employeeDto -> auth0UserIdMono.flatMap(authUser -> {
-                    auth0Service.deleteUser(authUser);
+                .flatMap(employeeDto -> { /*myAuth0UserIdMono.flatMap(authUser -> {
+                    auth0Service.deleteUser(authUser);*/
                     return Mono.just(employeeDto);
-                }));
+                });
     }
 
     public Mono<EmployeeDto> updateEmployee(EmployeeUpdateDto employeeDto) {

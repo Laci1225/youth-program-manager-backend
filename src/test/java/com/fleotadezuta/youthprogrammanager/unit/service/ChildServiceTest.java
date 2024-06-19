@@ -4,9 +4,11 @@ import com.fleotadezuta.youthprogrammanager.fixtures.service.ChildFixture;
 import com.fleotadezuta.youthprogrammanager.mapper.ChildMapper;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
+import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
+import graphql.GraphQLContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +20,8 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static com.fleotadezuta.youthprogrammanager.constants.HttpConstants.APP_USER_ID;
+import static com.fleotadezuta.youthprogrammanager.constants.HttpConstants.APP_USER_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +42,7 @@ public class ChildServiceTest {
 
     @Test
     void getAllChildrenShouldReturnAllChildren() {
-    /*    // Arrange
+        // Arrange
         when(childRepository.findAll())
                 .thenReturn(Flux.just(ChildFixture.getChildDocument()));
         when(childMapper.fromChildDocumentToChildDto(any(ChildDocument.class)))
@@ -47,8 +51,9 @@ public class ChildServiceTest {
         // Act
         var childrenFlux = childService.getAllChildren(new UserDetails(
                 GraphQLContext.newContext()
-                        .of("userId", "parent123")
-                        .of("userType", "TEACHER").build()));
+                        .of(APP_USER_ID, "parent123")
+                        .of(APP_USER_TYPE, "TEACHER")
+                        .build()));
 
         // Assert
         assertThat(childrenFlux.collectList().block())
@@ -56,12 +61,11 @@ public class ChildServiceTest {
                 .isEqualTo(ChildFixture.getChildDtoList());
         verify(childRepository, times(1)).findAll();
         verifyNoMoreInteractions(childRepository);
-    */
     }
 
     @Test
     void getAllChildrenShouldReturnChildrenByParentIdWhenUserIsNotEmployee() {
-      /*  // Arrange
+        // Arrange
         when(childRepository.findChildDocumentsByRelativeParents_Id(anyString()))
                 .thenReturn(Flux.just(ChildFixture.getChildDocument()));
         when(childMapper.fromChildDocumentToChildDto(any(ChildDocument.class)))
@@ -70,8 +74,9 @@ public class ChildServiceTest {
         // Act
         var childrenFlux = childService.getAllChildren(new UserDetails(
                 GraphQLContext.newContext()
-                        .of("userId", "parent123")
-                        .of("userType", "PARENT").build()));
+                        .of(APP_USER_ID, "parent123")
+                        .of(APP_USER_TYPE, "PARENT")
+                        .build()));
 
         // Assert
         assertThat(childrenFlux.collectList().block())
@@ -79,7 +84,6 @@ public class ChildServiceTest {
                 .isEqualTo(ChildFixture.getChildDtoList());
         verify(childRepository, times(1)).findChildDocumentsByRelativeParents_Id(anyString());
         verifyNoMoreInteractions(childRepository);
-    */
     }
 
     @Test

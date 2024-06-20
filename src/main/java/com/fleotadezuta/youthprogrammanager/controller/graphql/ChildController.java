@@ -31,6 +31,12 @@ public class ChildController {
         return childService.getAllChildren(new UserDetails(context));
     }
 
+    @QueryMapping("getAll")
+    public Flux<String> getAll() {
+        return childService.getAll();
+    }
+
+
     @PreAuthorize("hasAuthority('read:children')")
     @QueryMapping("getChildById")
     public Mono<ChildWithParentsDto> getChildById(@Argument String id) {

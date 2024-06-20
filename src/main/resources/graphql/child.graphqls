@@ -84,6 +84,7 @@ input ChildInput {
 
 type Query {
     getAllChildren: [Child!]!
+    getAll: [String]!
     getChildById(id: String!): ChildWithParents!
     getPotentialParents(name: String!): [Parent]
 }

@@ -70,6 +70,8 @@ public class ChildFixture {
                 .relativeParents(RELATIVE_PARENTS)
                 .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
+                .hasDiagnosedDiseases(true)
+                .hasRegularMedicines(true)
                 .build();
     }
 

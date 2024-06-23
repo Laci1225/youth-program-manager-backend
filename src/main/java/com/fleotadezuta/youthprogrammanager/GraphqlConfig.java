@@ -33,7 +33,7 @@ public class GraphqlConfig extends DataFetcherExceptionResolverAdapter {
     private GraphQLScalarType localDateTimeScalar() {
         return GraphQLScalarType.newScalar()
                 .name("LocalDateTime")
-                .coercing(new GraphqlLocalDateTimeCoercing(false, DateTimeFormatter.ISO_LOCAL_DATE))
+                .coercing(new GraphqlLocalDateTimeCoercing(false, DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .build();
     }
 }

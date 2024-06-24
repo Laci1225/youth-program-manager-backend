@@ -95,8 +95,4 @@ public class ChildService {
         return childRepository.findAllById(childIds)
                 .map(childMapper::fromChildDocumentToChildDto);
     }
-
-    public Flux<String> getAll() {
-        return Flux.just("Hello", "World");
-    }
 }

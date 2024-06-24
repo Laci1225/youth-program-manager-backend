@@ -10,6 +10,7 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
+import com.fleotadezuta.youthprogrammanager.service.EmailService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class ChildParentFacade {
     private final ParentService parentService;
     private final ChildService childService;
     private final Auth0Service auth0Service;
+    private final EmailService emailService;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -68,9 +70,12 @@ public class ChildParentFacade {
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid parentId: " + relativeParent.getId())));
 
-        return Flux.merge(parentMono)
-                .then(childRepository.save(childMapper.fromChildCreationDtoToChildDocument(childCreateDto)))
-                .map(childMapper::fromChildDocumentToChildDto)
+        return parentMono.flatMap(parentDocument -> childRepository.save(childMapper.fromChildCreationDtoToChildDocument(childCreateDto))
+                        .map(childMapper::fromChildDocumentToChildDto)
+                        .doOnSuccess(childDto ->
+                                emailService.sendSimpleMessage(parentDocument.getEmail(),
+                                        "New Child Assigned to You",
+                                        "Child" + childCreateDto.getGivenName() + " " + childCreateDto.getFamilyName() + " is assigned to you")))
                 .onErrorResume(Mono::error);
     }
 

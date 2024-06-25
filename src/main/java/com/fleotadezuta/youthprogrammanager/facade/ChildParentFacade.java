@@ -10,6 +10,7 @@ import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import com.fleotadezuta.youthprogrammanager.persistence.document.Role;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.ChildRepository;
 import com.fleotadezuta.youthprogrammanager.service.ChildService;
+import com.fleotadezuta.youthprogrammanager.service.EmailService;
 import com.fleotadezuta.youthprogrammanager.service.ParentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class ChildParentFacade {
     private final ParentService parentService;
     private final ChildService childService;
     private final Auth0Service auth0Service;
+    private final EmailService emailService;
 
     public Flux<ParentDto> getPotentialParents(String name) {
         return parentService.findByFullName(name);
@@ -68,17 +70,83 @@ public class ChildParentFacade {
                 .map(parentMapper::fromParentDtoToParentDocument)
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid parentId: " + relativeParent.getId())));
 
-        return Flux.merge(parentMono)
-                .then(childRepository.save(childMapper.fromChildCreationDtoToChildDocument(childCreateDto)))
-                .map(childMapper::fromChildDocumentToChildDto)
+        return parentMono.flatMap(parentDocument -> childRepository.save(childMapper.fromChildCreationDtoToChildDocument(childCreateDto))
+                        .map(childMapper::fromChildDocumentToChildDto)
+
+                        .doOnSuccess(childDto ->
+                                emailService.sendSimpleMessage(parentDocument.getEmail(),
+                                        "New Child Assigned to You",
+                                        "Dear " + parentDocument.getGivenName() + " " + parentDocument.getFamilyName() + ",\n\n" +
+                                                "We are pleased to inform you that a new child, " + childCreateDto.getGivenName() + " " + childCreateDto.getFamilyName() + ", has been assigned to you. " +
+                                                "Please log in to your account to view more details.\n\n" +
+                                                "Best regards,\nYouth Program Manager Team")))
                 .onErrorResume(Mono::error);
+    }
+
+    public Mono<ChildDto> deleteChild(String id) {
+        return childRepository.findById(id)
+                .flatMap(child -> {
+                    List<String> parentIds = child.getRelativeParents().stream()
+                            .map(RelativeParent::getId)
+                            .toList();
+                    return childRepository.deleteById(id)
+                            .thenMany(parentService.findAllById(parentIds))
+                            .collectList()
+                            .doOnNext(parents -> {
+                                String subject = "Child Deletion Notification";
+                                String message = "The child " + child.getGivenName() + " " + child.getFamilyName() + " has been removed from the Youth Program Manager system.";
+                                parents.forEach(parent -> emailService.sendSimpleMessage(parent.getEmail(), subject, message));
+                            })
+                            .then(Mono.just(child));
+                })
+                .map(childMapper::fromChildDocumentToChildDto);
+    }
+
+    public Mono<ChildUpdateDto> updateChild(ChildUpdateDto childUpdateDto) {
+        List<String> parentIds = childUpdateDto.getRelativeParents()
+                .stream()
+                .map(RelativeParent::getId)
+                .toList();
+        Set<String> uniqueParentIds = new HashSet<>(parentIds);
+        if (parentIds.size() != uniqueParentIds.size()) {
+            return Mono.error(new IllegalArgumentException("Relative parent IDs are not unique"));
+        }
+        return Mono.just(childUpdateDto)
+                .map(childMapper::fromChildUpdateDtoToChildDocument)
+                .flatMap(childDoc -> {
+                    childDoc.setId(childUpdateDto.getId());
+                    return childRepository.save(childDoc)
+                            .thenMany(parentService.findAllById(parentIds))
+                            .collectList()
+                            .doOnNext(parents -> {
+                                String subject = "Parent Addition Notification";
+                                String message = "You have been added as a parent to the child " + childDoc.getGivenName() + " " + childDoc.getFamilyName() + ".";
+                                parents.forEach(parent -> emailService.sendSimpleMessage(parent.getEmail(), subject, message));
+                            })
+                            .then(Mono.just(childDoc));
+                })
+                .map(childMapper::fromChildDocumentToChildUpdateDto);
+    }
+
+    public Mono<Void> removeParentFromChildren(String parentIdToRemove) {
+        return childService.findByParentId(parentIdToRemove)
+                .map(childMapper::fromChildDtoToChildDocument)
+                .flatMap(child -> {
+                    child.getRelativeParents().removeIf(parent -> parent.getId().equals(parentIdToRemove));
+                    return updateChild(childMapper.fromChildDocumentToChildUpdateDto(child));
+                }).then(); //to return Mono<Void>
     }
 
     public Mono<ParentDto> deleteParent(String id) {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
-                        .then(childService.removeParentFromChildren(parent.getId()))
-                        .thenReturn(parent));
+                        .then(removeParentFromChildren(parent.getId()))
+                        .thenReturn(parent)
+                        .doOnSuccess(deletedParent -> emailService.sendSimpleMessage(deletedParent.getEmail(),
+                                "Your Account Has Been Deleted",
+                                "Dear " + deletedParent.getGivenName() + " " + deletedParent.getFamilyName() + ",\n\n" +
+                                        "Your account has been successfully delet   ed from Youth Program Manager.\n\n" +
+                                        "Best regards,\nYouth Program Manager Team")));
     }
 
 
@@ -152,7 +220,13 @@ public class ChildParentFacade {
                                             .thenReturn(validatedParent);
                                 });
                     }
-                }).doOnNext(parentDto -> auth0Service.createUser(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT));
+                }).doOnNext(parentDto -> {
+                    auth0Service.createUser(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT);
+                    emailService.sendSimpleMessage(parentDto.getEmail(), "Welcome to Youth Program Manager",
+                            "Dear " + parentDto.getGivenName() + " " + parentDto.getFamilyName() + ",\n\n" +
+                                    "Welcome to Youth Program Manager! Your account has been created successfully.\n\n" +
+                                    "Best regards,\nYouth Program Manager Team");
+                });
     }
 
 
@@ -196,6 +270,9 @@ public class ChildParentFacade {
                                         .collectList()
                                         .then(parentService.save(parentDoc));
                             });
-                });
+                }).doOnNext(parentDto -> emailService.sendSimpleMessage(parentDto.getEmail(), "Your Profile Has Been Updated",
+                        "Dear " + parentDto.getGivenName() + " " + parentDto.getFamilyName() + ",\n\n" +
+                                "Your profile has been successfully updated.\n\n" +
+                                "Best regards,\nYouth Program Manager Team"));
     }
 }

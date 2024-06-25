@@ -14,7 +14,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 public class ChildCreateDto {
-    private String id;
     private String familyName;
     private String givenName;
     private LocalDateTime birthDate;
@@ -23,8 +22,6 @@ public class ChildCreateDto {
     private RelativeParent relativeParent;
     private List<DiseaseDto> diagnosedDiseases;
     private List<MedicineDto> regularMedicines;
-    private Boolean hasDiagnosedDiseases;
-    private Boolean hasRegularMedicines;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 }

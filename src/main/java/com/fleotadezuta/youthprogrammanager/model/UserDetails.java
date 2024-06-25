@@ -15,5 +15,6 @@ public class UserDetails {
         this.userId = context.get(APP_USER_ID).toString();
         this.userType = context.get(APP_USER_TYPE).toString();
     }
+    
 
 }

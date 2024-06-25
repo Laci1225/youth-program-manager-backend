@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 public class UserController {
     private final UserFacade userFacade;
 
-    @GetMapping("/me")
+    @GetMapping("/")
     public Mono<CurrentUserDto> getCurrentUser() {
         return userFacade.getCurrentUser();
     }

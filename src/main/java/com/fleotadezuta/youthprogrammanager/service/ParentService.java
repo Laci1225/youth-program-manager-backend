@@ -11,7 +11,9 @@ import reactor.core.publisher.Mono;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -31,9 +33,13 @@ public class ParentService {
                 .onErrorMap(NumberParseException.class, e -> new IllegalArgumentException("Invalid phone number: " + e.getMessage()))
                 .collectList()
                 .flatMap(validatedPhoneNumbers -> {
+                    Set<String> uniquePhoneNumbers = new HashSet<>(phoneNumbers);
+                    if (uniquePhoneNumbers.size() != phoneNumbers.size()) {
+                        return Mono.error(new IllegalArgumentException("Duplicate phone numbers are not allowed"));
+                    }
                     if (validatedPhoneNumbers.size() == phoneNumbers.size()) {
                         return Mono.just(parentDto);
-                    } else {
+                    } else { //cannot happen
                         return Mono.error(new IllegalArgumentException("Some phone numbers are invalid"));
                     }
                 });

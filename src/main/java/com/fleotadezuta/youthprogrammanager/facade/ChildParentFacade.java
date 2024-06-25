@@ -72,10 +72,14 @@ public class ChildParentFacade {
 
         return parentMono.flatMap(parentDocument -> childRepository.save(childMapper.fromChildCreationDtoToChildDocument(childCreateDto))
                         .map(childMapper::fromChildDocumentToChildDto)
+
                         .doOnSuccess(childDto ->
                                 emailService.sendSimpleMessage(parentDocument.getEmail(),
                                         "New Child Assigned to You",
-                                        "Child" + childCreateDto.getGivenName() + " " + childCreateDto.getFamilyName() + " is assigned to you")))
+                                        "Dear " + parentDocument.getGivenName() + " " + parentDocument.getFamilyName() + ",\n\n" +
+                                                "We are pleased to inform you that a new child, " + childCreateDto.getGivenName() + " " + childCreateDto.getFamilyName() + ", has been assigned to you. " +
+                                                "Please log in to your account to view more details.\n\n" +
+                                                "Best regards,\nYouth Program Manager Team")))
                 .onErrorResume(Mono::error);
     }
 
@@ -83,7 +87,12 @@ public class ChildParentFacade {
         return parentService.findById(id)
                 .flatMap(parent -> parentService.deleteById(id)
                         .then(childService.removeParentFromChildren(parent.getId()))
-                        .thenReturn(parent));
+                        .thenReturn(parent)
+                        .doOnSuccess(deletedParent -> emailService.sendSimpleMessage(deletedParent.getEmail(),
+                                "Your Account Has Been Deleted",
+                                "Dear " + deletedParent.getGivenName() + " " + deletedParent.getFamilyName() + ",\n\n" +
+                                        "Your account has been successfully delet   ed from Youth Program Manager.\n\n" +
+                                        "Best regards,\nYouth Program Manager Team")));
     }
 
 
@@ -157,7 +166,13 @@ public class ChildParentFacade {
                                             .thenReturn(validatedParent);
                                 });
                     }
-                }).doOnNext(parentDto -> auth0Service.createUser(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT));
+                }).doOnNext(parentDto -> {
+                    auth0Service.createUser(parentDto.getEmail(), parentDto.getId(), parentDto.getGivenName(), parentDto.getFamilyName(), Role.PARENT);
+                    emailService.sendSimpleMessage(parentDto.getEmail(), "Welcome to Youth Program Manager",
+                            "Dear " + parentDto.getGivenName() + " " + parentDto.getFamilyName() + ",\n\n" +
+                                    "Welcome to Youth Program Manager! Your account has been created successfully.\n\n" +
+                                    "Best regards,\nYouth Program Manager Team");
+                });
     }
 
 
@@ -201,6 +216,9 @@ public class ChildParentFacade {
                                         .collectList()
                                         .then(parentService.save(parentDoc));
                             });
-                });
+                }).doOnNext(parentDto -> emailService.sendSimpleMessage(parentDto.getEmail(), "Your Profile Has Been Updated",
+                        "Dear " + parentDto.getGivenName() + " " + parentDto.getFamilyName() + ",\n\n" +
+                                "Your profile has been successfully updated.\n\n" +
+                                "Best regards,\nYouth Program Manager Team"));
     }
 }

@@ -67,7 +67,7 @@ public class ChildFixture {
                 .birthDate(BIRTH_DATE)
                 .birthPlace(BIRTH_PLACE)
                 .address(ADDRESS)
-                .relativeParents(List.of(RELATIVE_PARENT))
+                .relativeParents(new ArrayList<>(List.of(RELATIVE_PARENT)))
                 .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
                 .hasDiagnosedDiseases(true)

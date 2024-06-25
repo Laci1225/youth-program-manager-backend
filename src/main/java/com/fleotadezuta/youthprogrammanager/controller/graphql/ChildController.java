@@ -48,14 +48,14 @@ public class ChildController {
     @PreAuthorize("hasAuthority('update:children')")
     @MutationMapping("updateChild")
     public Mono<ChildUpdateDto> updateChild(@Valid @RequestBody @Argument ChildUpdateDto child) {
-        return childService.updateChild(child)
+        return childParentFacade.updateChild(child)
                 .doOnSuccess(childUpdateDto -> log.info("Updated Child with ID: " + childUpdateDto.getId()));
     }
 
     @PreAuthorize("hasAuthority('delete:children')")
     @MutationMapping("deleteChild")
     public Mono<ChildDto> deleteChild(@Argument String id) {
-        return childService.deleteChild(id)
+        return childParentFacade.deleteChild(id)
                 .doOnSuccess(deletedChild -> log.info("Deleted Child with ID: " + deletedChild.getId()));
     }
 

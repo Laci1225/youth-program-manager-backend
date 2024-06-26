@@ -1,7 +1,9 @@
 package com.fleotadezuta.youthprogrammanager.fixtures.service;
 
+import com.fleotadezuta.youthprogrammanager.model.ChildCreateDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildDto;
 import com.fleotadezuta.youthprogrammanager.model.ChildUpdateDto;
+import com.fleotadezuta.youthprogrammanager.model.ChildWithParentsDto;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ChildDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import lombok.Data;
@@ -87,6 +89,48 @@ public class ChildFixture {
                 .relativeParents(List.of(ParentFixture.getRelativeParent(), ParentFixture.getRelativeParent()))
                 .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
+                .build();
+    }
+
+    public static ChildCreateDto getChildCreateDto() {
+        return ChildCreateDto.builder()
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .birthDate(BIRTH_DATE)
+                .birthPlace(BIRTH_PLACE)
+                .address(ADDRESS)
+                .relativeParent(RELATIVE_PARENT)
+                .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
+                .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
+                .build();
+    }
+
+    public static ChildCreateDto getChildCreateDtoWithoutParent() {
+        return ChildCreateDto.builder()
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .birthDate(BIRTH_DATE)
+                .birthPlace(BIRTH_PLACE)
+                .address(ADDRESS)
+                .relativeParent(null)
+                .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
+                .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
+                .build();
+    }
+
+    public static ChildWithParentsDto getChildWithParentsDto() {
+        return ChildWithParentsDto.builder()
+                .id(ID)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .birthDate(BIRTH_DATE)
+                .birthPlace(BIRTH_PLACE)
+                .address(ADDRESS)
+                .parents(new ArrayList<>(List.of(ParentFixture.getParentWithContactDto())))
+                .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
+                .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
+                .hasDiagnosedDiseases(true)
+                .hasRegularMedicines(true)
                 .build();
     }
 }

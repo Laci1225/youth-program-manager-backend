@@ -54,6 +54,8 @@ public class ChildFixture {
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
                 .hasDiagnosedDiseases(true)
                 .hasRegularMedicines(true)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 
@@ -74,6 +76,8 @@ public class ChildFixture {
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
                 .hasDiagnosedDiseases(true)
                 .hasRegularMedicines(true)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 
@@ -102,6 +106,8 @@ public class ChildFixture {
                 .relativeParent(RELATIVE_PARENT)
                 .diagnosedDiseases(List.of(DiseaseFixture.getDiseaseDto()))
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 
@@ -131,6 +137,8 @@ public class ChildFixture {
                 .regularMedicines(List.of(MedicineFixture.getMedicineDto()))
                 .hasDiagnosedDiseases(true)
                 .hasRegularMedicines(true)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 }

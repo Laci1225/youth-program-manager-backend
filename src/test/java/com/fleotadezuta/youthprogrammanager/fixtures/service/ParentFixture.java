@@ -30,6 +30,8 @@ public class ParentFixture {
                 .givenName(GIVEN_NAME)
                 .phoneNumbers(VALID_PHONE_NUMBERS)
                 .address(ADDRESS)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 
@@ -141,6 +143,8 @@ public class ParentFixture {
                 .phoneNumbers(VALID_PHONE_NUMBERS)
                 .childIds(List.of("child123"))
                 .address(ADDRESS)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 
@@ -165,6 +169,8 @@ public class ParentFixture {
                 .phoneNumbers(VALID_PHONE_NUMBERS)
                 .address(ADDRESS)
                 .childId("child123")
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 

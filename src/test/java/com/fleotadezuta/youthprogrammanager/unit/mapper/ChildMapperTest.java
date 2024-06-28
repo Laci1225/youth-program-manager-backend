@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class ChildMapperTest {
 
     @Autowired
-    ChildMapper childMapper;
+    private ChildMapper childMapper;
 
     @Test
     void fromChildDocumentToChildDto() {

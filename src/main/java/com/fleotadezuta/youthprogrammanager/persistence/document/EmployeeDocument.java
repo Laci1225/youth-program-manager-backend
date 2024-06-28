@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @Builder
@@ -18,4 +20,6 @@ public class EmployeeDocument {
     private String email;
     private String phoneNumber;
     private Role type;
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
 }

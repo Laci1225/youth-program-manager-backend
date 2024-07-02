@@ -67,8 +67,8 @@ input ChildUpdateInput {
     regularMedicines: [MedicineInput!]
 }
 input RelativeParentsInput {
-    id: ID!
-    isEmergencyContact: Boolean!
+    id: ID
+    isEmergencyContact: Boolean
 }
 
 input ChildInput {

@@ -1,6 +1,6 @@
 package com.fleotadezuta.youthprogrammanager.fixtures.service;
 
-import com.fleotadezuta.youthprogrammanager.model.ParentDto;
+import com.fleotadezuta.youthprogrammanager.model.*;
 import com.fleotadezuta.youthprogrammanager.persistence.document.ParentDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.document.RelativeParent;
 import lombok.Data;
@@ -30,6 +30,8 @@ public class ParentFixture {
                 .givenName(GIVEN_NAME)
                 .phoneNumbers(VALID_PHONE_NUMBERS)
                 .address(ADDRESS)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
                 .build();
     }
 
@@ -132,4 +134,66 @@ public class ParentFixture {
     }
 
 
+    public static ParentUpdateDto getParentUpdateDto() {
+        return ParentUpdateDto.builder()
+                .id(ID)
+                .email(EMAIL)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .phoneNumbers(VALID_PHONE_NUMBERS)
+                .childIds(List.of("child123"))
+                .address(ADDRESS)
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
+                .build();
+    }
+
+    public static List<ParentUpdateDto> getParentUpdateDtoList() {
+        var list = new ArrayList<ParentUpdateDto>();
+        list.add(getParentUpdateDto());
+        return list;
+    }
+
+    public static ParentWithContactDto getParentWithContactDto() {
+        return ParentWithContactDto.builder()
+                .parentDto((getParentDto()))
+                .isEmergencyContact(true)
+                .build();
+    }
+
+    public static ParentCreateDto getParentCreateDto() {
+        return ParentCreateDto.builder()
+                .email(EMAIL)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .phoneNumbers(VALID_PHONE_NUMBERS)
+                .address(ADDRESS)
+                .childId("child123")
+                .createdDate(CREATED_DATE)
+                .modifiedDate(MODIFIED_DATE)
+                .build();
+    }
+
+    public static ParentCreateDto getParentCreateDtoWithoutChildIds() {
+        return ParentCreateDto.builder()
+                .email(EMAIL)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .phoneNumbers(VALID_PHONE_NUMBERS)
+                .address(ADDRESS)
+                .childId(null)
+                .build();
+    }
+
+    public static ParentWithChildrenDto getParentWithChildrenDto() {
+        return ParentWithChildrenDto.builder()
+                .id(ID)
+                .email(EMAIL)
+                .familyName(FAMILY_NAME)
+                .givenName(GIVEN_NAME)
+                .phoneNumbers(VALID_PHONE_NUMBERS)
+                .address(ADDRESS)
+                .childDtos(new ArrayList<>(List.of(ChildFixture.getChildDto())))
+                .build();
+    }
 }

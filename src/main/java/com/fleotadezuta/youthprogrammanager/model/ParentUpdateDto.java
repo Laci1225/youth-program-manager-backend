@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,4 +20,6 @@ public class ParentUpdateDto {
     private List<String> phoneNumbers;
     private List<String> childIds;
     private String address;
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
 }

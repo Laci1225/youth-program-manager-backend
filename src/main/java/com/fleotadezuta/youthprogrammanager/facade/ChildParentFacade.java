@@ -65,6 +65,11 @@ public class ChildParentFacade {
             ChildDocument childDocument = childMapper.fromChildCreationDtoToChildDocument(childCreateDto);
             return childRepository.save(childDocument)
                     .map(childMapper::fromChildDocumentToChildDto);
+        } else if (relativeParent.getId() == null) { //todo temporary solution
+            ChildDocument childDocument = childMapper.fromChildCreationDtoToChildDocument(childCreateDto);
+            childDocument.setRelativeParents(Collections.emptyList());
+            return childRepository.save(childDocument)
+                    .map(childMapper::fromChildDocumentToChildDto);
         }
         Mono<ParentDocument> parentMono = parentService.findById(relativeParent.getId())
                 .map(parentMapper::fromParentDtoToParentDocument)

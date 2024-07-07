@@ -8,21 +8,19 @@ import com.fleotadezuta.youthprogrammanager.model.EmployeeUpdateDto;
 import com.fleotadezuta.youthprogrammanager.model.UserDetails;
 import com.fleotadezuta.youthprogrammanager.persistence.document.EmployeeDocument;
 import com.fleotadezuta.youthprogrammanager.persistence.repository.EmployeeRepository;
+import com.fleotadezuta.youthprogrammanager.service.EmailService;
 import com.fleotadezuta.youthprogrammanager.service.EmployeeService;
 import graphql.GraphQLContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.security.Principal;
 
 import static com.fleotadezuta.youthprogrammanager.constants.HttpConstants.APP_USER_ID;
 import static com.fleotadezuta.youthprogrammanager.constants.HttpConstants.APP_USER_TYPE;
@@ -47,7 +45,7 @@ public class EmployeeServiceTest {
     private Auth0Service auth0Service;
 
     @Mock
-    private ReactiveSecurityContextHolder reactiveSecurityContextHolder;
+    private EmailService emailService;
 
     @Test
     void getAllEmployeesShouldReturnAllEmployees() {
@@ -98,6 +96,7 @@ public class EmployeeServiceTest {
                 .thenReturn(EmployeeFixture.getEmployeeDocument());
         when(employeeMapper.fromEmployeeDocumentToEmployeeDto(any(EmployeeDocument.class)))
                 .thenReturn(EmployeeFixture.getEmployeeDto());
+        doNothing().when(emailService).sendSimpleMessage(anyString(), anyString(), anyString());
 
         // Act
         var employeeMono = employeeService.addEmployee(EmployeeFixture.getEmployeeDto());
@@ -120,6 +119,7 @@ public class EmployeeServiceTest {
                 .thenReturn(updatedDocument);
         when(employeeMapper.fromEmployeeDocumentToEmployeeDto(any(EmployeeDocument.class)))
                 .thenReturn(EmployeeFixture.getEmployeeDto());
+        doNothing().when(emailService).sendSimpleMessage(anyString(), anyString(), anyString());
 
         // Act
         var employeeMono = employeeService.updateEmployee(EmployeeFixture.getEmployeeUpdateDto());
@@ -140,6 +140,8 @@ public class EmployeeServiceTest {
                 .thenReturn(Mono.empty());
         when(employeeMapper.fromEmployeeDocumentToEmployeeDto(any(EmployeeDocument.class)))
                 .thenReturn(EmployeeFixture.getEmployeeDto());
+        doNothing().when(emailService).sendSimpleMessage(anyString(), anyString(), anyString());
+
         // Act
         var employeeMono = employeeService.deleteEmployee(
                 new UserDetails(
